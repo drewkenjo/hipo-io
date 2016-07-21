@@ -209,6 +209,15 @@ public class HipoReader {
         }
     }
         
+    public void showHeader(){
+        HipoRecord header = this.readRecord(0);
+        int  nevents = header.getEventCount();
+        for(int ev = 0; ev < nevents; ev++){
+            byte[] buffer = header.getEvent(ev);
+            String descriptor = new String(buffer);
+            System.out.println(String.format("%5d : %s", ev,descriptor));
+        }
+    }
     
     public String getStatusString(){
         StringBuilder str = new StringBuilder();
@@ -264,6 +273,7 @@ public class HipoReader {
         HipoReader reader = new HipoReader();
         reader.open("testfile.bio");
         //reader.show();
+        reader.showHeader();
         System.out.println(reader.getStatusString());
         int nevt = reader.getEventCount();
         System.out.println("N-EVENTS = " + nevt);

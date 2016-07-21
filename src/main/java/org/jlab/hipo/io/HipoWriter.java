@@ -30,6 +30,7 @@ public class HipoWriter {
      * record.
      */
     HipoRecord         outputRecord = null;
+    HipoRecord         headerRecord = null;
     /**
      * maximum number of bytes allowed in the record. if the newly added
      * event exceeds the maximum size, the record will be written to the file. 
@@ -63,7 +64,8 @@ public class HipoWriter {
     
     public HipoWriter(){
         this.outputRecord = new HipoRecord(); 
-    }
+        this.headerRecord = new HipoRecord();
+    }        
     /**
      * creates new Writer with an empty record store and associates with 
      * an external file with given name.
@@ -78,7 +80,7 @@ public class HipoWriter {
      * @param name file name to write data in
      */
     public final void open(String name){
-        this.open(name, new byte[]{'E','M','P','T','Y'});
+        this.open(name, new byte[]{'E','M','P','T'});
         /*
         try {
             outStream = new FileOutputStream(new File(name));            
@@ -120,11 +122,38 @@ public class HipoWriter {
         }
     }
     /**
+     * Adds string to configuration record, this record will be written the 
+     * first initiation of write operation. It will be record number 0 in the
+     * file. 
+     * @param config 
+     */
+    public void addHeader(String config){
+        byte[] buffer = config.getBytes();
+        this.headerRecord.addEvent(buffer);
+    }
+    /**
      * Writes the content of the record into the file and resets the record buffer
      * so new data can be added.
      */
     public void write(){
         //this.outputRecord.show();
+        // If this is the first time Things being written into the file.
+        // The first record written is the header record. it is reserved
+        // for writing configuration information.
+        if(this.numberOfRecords==0){
+            byte[] header = this.headerRecord.getByteBuffer().array();
+            
+            try {
+                this.outStream.write(header);
+                System.out.println(
+                        String.format(
+                        "[HipoWriter::write] ---> writing header record (nevents=%d)",
+                                this.headerRecord.getEventCount()));
+            } catch (IOException ex) {
+                Logger.getLogger(HipoWriter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }        
+        
         if(this.outputRecord.getEventCount()!=0){
             try {
                 long stime_compress = System.currentTimeMillis();
@@ -238,10 +267,13 @@ public class HipoWriter {
     public static void main(String[] args){
         HipoWriter writer = new HipoWriter();
         //writer.setCompression(true);
+        writer.addHeader("DC::dgtz");
+        writer.addHeader("DC::true");
+        
         writer.setCompressionType(2);
         writer.open("testfile.bio");
         writer.setMaxRecordSize(8*1024*1024);
-        for(int i = 0; i < 140000; i++){
+        for(int i = 0; i < 1400; i++){
             byte[] buffer = HipoByteUtils.generateByteArray(45000);
             writer.writeEvent(buffer);
         }
