@@ -19,7 +19,8 @@ public enum HipoNodeType {
     INT       ( 3, 4, "INT"),    
     FLOAT     ( 4, 4, "FLOAT"),
     DOUBLE    ( 5, 8, "DOUBLE"),
-    STRING    ( 6, 1, "STRING");
+    STRING    ( 6, 1, "STRING"),
+    GROUP     ( 7, 0, "GROUP");
     
     private final int typeid;
     private final int sizeOf;
