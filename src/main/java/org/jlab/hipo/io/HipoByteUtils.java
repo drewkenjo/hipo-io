@@ -222,6 +222,22 @@ public class HipoByteUtils {
         return result;
     }
     /**
+     * write a number to a specific bits of existing long (64-bits). the specified
+     * bits are reset to 0 first then the provided number is written into 
+     * specified bits
+     * @param word reference integer word (4 bits) is not changed
+     * @param number and integer number written (user should check if the number fits)
+     * @param start starting bits (first bit is 0)
+     * @param end ending bit (for one bit start=end)
+     * @return returns a new integer with bits written
+     */
+    public static long writeLong(final long word, int number, int start, int end){
+        int index   = end - start + 1;
+        long result = (word & ~(HipoByteUtils.bitMap.get(index)<<(start)));
+        result = result|( (number&HipoByteUtils.bitMap.get(index))<<(start)) ;
+        return result;
+    }
+    /**
      * read specific bit from given integer.
      * @param word integer reference word
      * @param start starting bit (0 being the first one)
