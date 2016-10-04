@@ -63,7 +63,7 @@ public class HipoNode {
         nodeBuffer.order(ByteOrder.LITTLE_ENDIAN);
         
         short groupID  = HipoByteUtils.getShortFromInt(group);
-        int   lengthID = HipoByteUtils.getShortFromInt(length*bytesPerEntry);
+        int   lengthID = length*bytesPerEntry;
         byte  itemID   = HipoByteUtils.getByteFromInt(item);
         byte  typeID   = HipoByteUtils.getByteFromInt(type.getType());
         

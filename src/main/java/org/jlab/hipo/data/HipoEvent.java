@@ -41,6 +41,7 @@ public class HipoEvent {
      */
     public HipoEvent(byte[] buffer){        
         eventBuffer = ByteBuffer.wrap(buffer);
+        eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
         updateNodeIndex();
     }
     
@@ -101,6 +102,7 @@ public class HipoEvent {
         
         //eventIndex.clear();
         this.groupsIndex.clear();
+        int counter = 0;
         
         while((position+8)<capacity){
             
@@ -109,13 +111,13 @@ public class HipoEvent {
             byte  item  = eventBuffer.get(      position + 2);
             byte  type  = eventBuffer.get(      position + 3);
             int   size  = eventBuffer.getInt(   position + 4);
-            
+            //System.out.println( counter + " : position = " + );
             NodeIndexList  idx = new NodeIndexList(item,position,size);            
             idx.setType(type);
             Integer groupInt = (int) group;            
             
             if(this.groupsIndex.containsKey(groupInt)==false){
-                System.out.println("--> adding group " + groupInt);
+                //System.out.println("--> adding group " + groupInt);
                 this.groupsIndex.put( groupInt, new GroupNodeIndexList(group));
             }
             
@@ -146,6 +148,9 @@ public class HipoEvent {
         return str.toString();
     }
     
+    public byte[] getDataBuffer(){
+        return this.eventBuffer.array();
+    }
     
     
     public HipoNode getNode(int group, int item){
@@ -174,6 +179,10 @@ public class HipoEvent {
         return null;
     }
     
+    public boolean hasGroup(int group){
+        return this.groupsIndex.containsKey(group);
+    }
+        
     public Map<Integer,HipoNode>  getGroup(int group){
         Map<Integer,HipoNode> groupNodes = new LinkedHashMap<Integer,HipoNode>();
         if(this.groupsIndex.containsKey(group)==true){
@@ -206,7 +215,7 @@ public class HipoEvent {
         
         private int groupid = 0;
         
-        private Map<Integer,NodeIndexList>  nodesIndex = new HashMap<Integer,NodeIndexList>();
+        private final Map<Integer,NodeIndexList>  nodesIndex = new LinkedHashMap<Integer,NodeIndexList>();
         
         public GroupNodeIndexList(int gr){
             groupid = gr;
@@ -221,7 +230,7 @@ public class HipoEvent {
          * @param indx node index list
          */
         public void addNodeIndex(NodeIndexList indx){
-            System.out.println("----------> adding " + indx.nodeItem);
+            //System.out.println("----------> adding " + indx.nodeItem);
             if(nodesIndex.containsKey(indx.nodeItem)==true){
                 System.out.println("[GroupNodeIndexList] --> error : group = "
                         + groupid + "  already has an item with id="+indx.nodeItem);
