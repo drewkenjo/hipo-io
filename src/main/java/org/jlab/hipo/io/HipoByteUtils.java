@@ -250,16 +250,17 @@ public class HipoByteUtils {
     }
      
     /**
-     * read specific bit from given integer.
-     * @param word integer reference word
+     * read specific bit from given long.
+     * @param word long reference word
      * @param start starting bit (0 being the first one)
      * @param end   ending bit (for reading 1 bit start must be = to end)
      * @return 
      */
-    public static long readLong(final long word, int start, int end){
+    public static int readLong(final long word, int start, int end){
         int index = end-start+1;
-        return (word>>(start))&HipoByteUtils.bitMap.get(index);
+        return (int) ((word>>(start))&HipoByteUtils.bitMap.get(index));
     }
+    
     public static void main(String[] args){
         //BioByteUtils.printBitMap();
         //System.out.println(BioByteUtils.getByteString(1245678));
