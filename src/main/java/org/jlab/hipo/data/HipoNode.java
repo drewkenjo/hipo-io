@@ -231,6 +231,15 @@ public class HipoNode {
         return nodeBuffer.getInt(offset);
     }
     
+    public long getLong(int index){
+        if(nodeType!=HipoNodeType.LONG){
+            printWrongTypeMessage(HipoNodeType.LONG);
+            return 0;
+        }
+        int offset = getOffset(index);
+        return nodeBuffer.getLong(offset);
+    }
+    
     public double getDouble(int index){
         if(nodeType!=HipoNodeType.DOUBLE){
             printWrongTypeMessage(HipoNodeType.DOUBLE);
@@ -270,6 +279,15 @@ public class HipoNode {
         int offset = getOffset(index);
         nodeBuffer.putInt(offset, value);
     } 
+    
+    public void setInt(int index, long value){
+        if(nodeType!=HipoNodeType.LONG){
+            printWrongTypeMessage(HipoNodeType.LONG);
+            return;
+        }
+        int offset = getOffset(index);
+        nodeBuffer.putLong(offset, value);
+    }
     
     public void setFloat(int index, float value){
         if(nodeType!=HipoNodeType.FLOAT){
