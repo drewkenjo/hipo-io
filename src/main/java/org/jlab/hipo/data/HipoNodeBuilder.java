@@ -35,12 +35,35 @@ public class HipoNodeBuilder<T extends Number> {
             }
         }
     }
-    
+    /**
+     * returns false if the array capacity is less than predetermined
+     * maximum size of the node, if limit is negative it always returns false.
+     * @return true if maximum size is reached, false otherwise
+     */
     public boolean isFull(){
         if(container.size()>=containerLimit) return true;
         return false;
     }
-    
+    /**
+     * returns current size of the container.
+     * @return 
+     */
+    public int getSize(){
+        return this.container.size();
+    }
+    /**
+     * Resets the content of the node builder, the array is cleared.
+     * the maximum size limit is not changed.
+     */
+    public void reset(){
+        this.container.clear();
+    }
+    /**
+     * Builds a node from the array, type is determined by Template.
+     * @param group group is for the node
+     * @param item item id for the node
+     * @return HipoNode class 
+     */
     public HipoNode buildNode(int group, int item){
         
         if(container.size()>0){
