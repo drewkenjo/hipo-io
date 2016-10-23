@@ -280,7 +280,7 @@ public class HipoNode {
         nodeBuffer.putInt(offset, value);
     } 
     
-    public void setInt(int index, long value){
+    public void setLong(int index, long value){
         if(nodeType!=HipoNodeType.LONG){
             printWrongTypeMessage(HipoNodeType.LONG);
             return;
