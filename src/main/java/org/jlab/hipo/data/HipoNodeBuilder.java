@@ -15,15 +15,28 @@ import java.util.List;
 public class HipoNodeBuilder<T extends Number> {
     private List<T>  container = new ArrayList<T>();
     private int      containerLimit = -1;
-    
+    /**
+     * Default Constructor. Sets the maximum limit of elements to
+     * negative number, therefore there is no restrictions on how many
+     * elements can be stored.
+     */
     public HipoNodeBuilder(){
-        
+        this.containerLimit = -1;
     }
-    
+    /**
+     * Constructor with setting a limit on how many elements
+     * maximum can be stored in the builder.
+     * @param limit maximum number of elements to store
+     */
     public HipoNodeBuilder(int limit){
         this.containerLimit = limit;
     }
-    
+    /**
+     * adds an element of given type to the end of the list.
+     * the check is performed to see if the array has reached the
+     * maximum allowed size set by user.
+     * @param value element to add to the array.
+     */
     public void push(T value){
         if(containerLimit<0){
             container.add(value);
@@ -107,4 +120,5 @@ public class HipoNodeBuilder<T extends Number> {
         }
         return null;
     }
+    
 }
