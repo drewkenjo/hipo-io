@@ -24,13 +24,24 @@ public class HipoNode {
     private int            headerLength = 8;
     private int  headerLengthDataOffset = 6;
     private int     hederTypeDataOffset = 2;
+       
+    
+    public HipoNode(int group, int item, HipoNodeType type, int length){
+        createNode(group, item, type, length);
+    }
     
     public HipoNode(int group, int item, String value){
         createNode(group,item,value);
     }
+        
+    public HipoNode(int group, int item, float[] value){
+        createNode(group,item,HipoNodeType.FLOAT,value.length);
+        for(int i = 0; i < value.length;i++) this.setFloat(i, value[i]);        
+    }
     
-    public HipoNode(int group, int item, HipoNodeType type, int length){
-        createNode(group, item, type, length);
+    public HipoNode(int group, int item, double[] value){
+        createNode(group,item,HipoNodeType.DOUBLE,value.length);
+        for(int i = 0; i < value.length;i++) this.setDouble(i, value[i]);        
     }
     /**
      * Initialize HipoNode from a byte array. 
@@ -198,6 +209,16 @@ public class HipoNode {
         }
         int offset = getOffset(index);
         return nodeBuffer.get(offset);
+    }
+    
+    public float[] getFloat(){
+        if(nodeType!=HipoNodeType.FLOAT){
+            printWrongTypeMessage(HipoNodeType.FLOAT);
+            return new float[0];
+        }        
+        float[] result = new float[this.getDataSize()];
+        for(int i = 0; i < result.length; i++) result[i] = getFloat(i);
+        return result;
     }
     
     public float getFloat(int index){
