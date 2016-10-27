@@ -95,11 +95,17 @@ public class HipoNode {
         int           ndata = bufferLength/type.getSize();
         return ndata;
     }
-    
+    /**
+     * returns the size of the buffer, including the header.
+     * @return internal ByteBuffer size
+     */
     public int getBufferSize(){
         return nodeBuffer.capacity();
     }
-    
+    /**
+     * returns the byte[] array of the buffer 
+     * @return array of bytes
+     */
     public byte[] getBufferData(){
         return nodeBuffer.array();
     }
@@ -178,13 +184,16 @@ public class HipoNode {
         int type = (int) nodeBuffer.get(3);
         return HipoNodeType.getType(type);
     }    
-    
+    /**
+     * returns offset of the data element in the ByteBuffer.
+     * includes the header length and size of element type.
+     * @param index index if the element.
+     * @return 
+     */
     private int getOffset(int index){
         HipoNodeType type = getType();
         return this.headerLength + type.getSize()*index;
-    }        
-    
-    
+    }    
     /**
      * returns a String object from the node. Strings are stored 
      * as byte[]. The data is copied into String.
@@ -201,7 +210,11 @@ public class HipoNode {
         System.arraycopy(nodeBuffer.array(), offset, array, 0, length);
         return new String(array);
     }
-    
+    /**
+     * returns a byte element from the array.
+     * @param index index of the element
+     * @return 
+     */
     public byte getByte(int index){
         if(nodeType!=HipoNodeType.BYTE){
             printWrongTypeMessage(HipoNodeType.BYTE);
@@ -210,17 +223,25 @@ public class HipoNode {
         int offset = getOffset(index);
         return nodeBuffer.get(offset);
     }
-    
+    /**
+     * returns a float array containing the data from the node.
+     * needs to be optimized with ArrayCopy !
+     * @return float[] array of the node.
+     */
     public float[] getFloat(){
         if(nodeType!=HipoNodeType.FLOAT){
             printWrongTypeMessage(HipoNodeType.FLOAT);
             return new float[0];
-        }        
+        }
         float[] result = new float[this.getDataSize()];
         for(int i = 0; i < result.length; i++) result[i] = getFloat(i);
         return result;
     }
-    
+    /**
+     * returns a float number of the element with given index
+     * @param index index of the element.
+     * @return 
+     */
     public float getFloat(int index){
         if(nodeType!=HipoNodeType.FLOAT){
             printWrongTypeMessage(HipoNodeType.FLOAT);
@@ -341,7 +362,10 @@ public class HipoNode {
      * @param args 
      */
     public static void main(String[] args){
+        
+        
         HipoNode node = new HipoNode(1200,1,HipoNodeType.SHORT,5);
+        
         for(int i = 0; i < 5; i++) { node.setShort(i, (short) ((i+1)*2) );}
         System.out.println(node.getHeaderString() + " : " + node.getDataString());
         

@@ -54,8 +54,10 @@ public class HipoByteUtils {
     }
     
     public static byte[] compressLZ4(byte[] uncompressed){
+        
         LZ4Factory factory = LZ4Factory.fastestInstance();
         LZ4Compressor compressor = factory.fastCompressor();
+                
         int maxCompressedLength = compressor.maxCompressedLength(uncompressed.length);
         byte[] compressed = new byte[maxCompressedLength];
         int compressedLength = compressor.compress(uncompressed, 0, 
@@ -68,6 +70,22 @@ public class HipoByteUtils {
         return compressedBytes;
     }
 
+    public static byte[] compressLZ4max(byte[] uncompressed){
+        
+        LZ4Factory factory = LZ4Factory.fastestInstance();
+        LZ4Compressor compressor = factory.highCompressor();
+        
+        int maxCompressedLength = compressor.maxCompressedLength(uncompressed.length);
+        byte[] compressed = new byte[maxCompressedLength];
+        int compressedLength = compressor.compress(uncompressed, 0, 
+                uncompressed.length, compressed, 0, maxCompressedLength);
+        //System.out.println(String.format("LZ4 COMPRESSOR = %X %X %X %X", compressed[0], compressed[1], compressed[2],
+        //                compressed[3]));
+        //System.out.println("DATA LEN  = " +  uncompressed.length + "  MAX = " + maxCompressedLength + "   CL = " + compressedLength);
+        byte[]  compressedBytes = new byte[compressedLength];
+        System.arraycopy(compressed, 0, compressedBytes, 0, compressedBytes.length);
+        return compressedBytes;
+    }
     /**
      * returns the byte array GZIP compressed.
      * @param count

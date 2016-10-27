@@ -11,10 +11,12 @@ import java.util.List;
 /**
  *
  * @author gavalian
+ * @param <T> node type to build, accepts classes extending Number
  */
 public class HipoNodeBuilder<T extends Number> {
-    private List<T>  container = new ArrayList<T>();
-    private int      containerLimit = -1;
+    
+    private final List<T>  container = new ArrayList<T>();
+    private int       containerLimit = -1;
     /**
      * Default Constructor. Sets the maximum limit of elements to
      * negative number, therefore there is no restrictions on how many

@@ -23,15 +23,17 @@ public class HipoRecord {
     
     boolean  isEditable = true;
     
-    List<Integer>  index  = new ArrayList<Integer>();
-    List<byte[]>   events = new ArrayList<byte[]>();
-    int            compressionType = 0;
-    
+    private List<Integer>     recordIndex   = new ArrayList<Integer>();
+    private List<byte[]>      recordEvents  = new ArrayList<byte[]>();
+    private int            compressionType  = 0;
+    private HipoRecordHeader   recordHeader = new HipoRecordHeader();
+    private Integer            recordBytesWritten = 0;
     /**
      * creates and empty record ready for adding events and removing events.
      */
     public HipoRecord(){
         reset();
+        recordHeader.reset();
     }
     
     /**
@@ -42,28 +44,18 @@ public class HipoRecord {
      */
     
     public HipoRecord(byte[] array){
-        this.initFromBinary(array);        
+        this.initFromBinary(array);
     }
     /**
      * initializes an empty record. writes the identifying string "RC_G" to
      * the first byte, this makes it easy to search in binary buffer for record
      * start bytes in case there is a corruption in the stream.
      */
-    public final void reset(){
-        
-        this.index.clear();
-        this.events.clear();
-
-        //byte[]  recs = HipoHeader.//new byte[]{'R','C','_','G'};
-
-        this.headerL = HipoHeader.RECORD_ID_STRING;//HipoHeader.getStringInt(recs);
-        //headerL = headerL|(recs[0]);
-        //headerL = headerL|(recs[1]<<8);
-        //headerL = headerL|(recs[2]<<16);
-        //headerL = headerL|(recs[3]<<24);
-        this.headerM = 0;
-        this.headerH = 0;
-        this.headerC = 0;
+    public final void reset(){        
+        this.recordIndex.clear();
+        this.recordEvents.clear();
+        this.recordHeader.reset();
+        this.recordBytesWritten = 0;
     }
     /**
      * add an byte array into the record.
@@ -71,87 +63,65 @@ public class HipoRecord {
      */
     public void addEvent(byte[] array){
         
-        int length = array.length;
-        //System.out.println(BioByteUtils.getByteString(headerH));
+        int eventLength = array.length;        
         
-        int previousLength = HipoByteUtils.read(headerH, 
-                HipoHeader.LOWBYTE_RECORD_SIZE ,
-                HipoHeader.HIGHBYTE_RECORD_SIZE);
+        recordEvents.add(array);                
+        recordHeader.setNumberOfEvents(recordEvents.size());
         
-        int previousCount  = HipoByteUtils.read(headerM, 
-                HipoHeader.LOWBYTE_RECORD_EVENTCOUNT,
-                HipoHeader.HIGHBYTE_RECORD_EVENTCOUNT);
-        
-        
-        //System.out.println("PREVIOUS LENGTH =  " + previousLength);
-        events.add(array);
-        index.add(previousLength);
-        previousCount++;
-        
-        headerH = HipoByteUtils.write(headerH, previousLength+length,
-                HipoHeader.LOWBYTE_RECORD_SIZE ,
-                HipoHeader.HIGHBYTE_RECORD_SIZE);
-        
-        headerM = HipoByteUtils.write(headerM, previousCount,
-                HipoHeader.LOWBYTE_RECORD_EVENTCOUNT,
-                HipoHeader.HIGHBYTE_RECORD_EVENTCOUNT);
-        
-        headerC = HipoByteUtils.write(headerC, previousLength+length,
-                HipoHeader.LOWBYTE_RECORD_SIZE ,
-                HipoHeader.HIGHBYTE_RECORD_SIZE);
-        //System.out.println(BioByteUtils.getByteString(headerH));
+        recordBytesWritten += eventLength;
+      
     }
     
-    public ByteBuffer  getByteBuffer(boolean compressed, int compressionType){
-        
-        if(compressed == false) return this.getByteBuffer();
-        
-        byte[]  dataBytes = this.getDataBytes();
-        //byte[]  dataBytesCompressed = HipoByteUtils.gzip(dataBytes);
-        byte[]  dataBytesCompressed = HipoByteUtils.compressLZ4(dataBytes);
-        
-        int  size = HipoHeader.RECORD_HEADER_SIZE + 
-                this.index.size()*4 + 
-                dataBytesCompressed.length;
-        
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        
-        int ihH = HipoByteUtils.write(0, dataBytesCompressed.length, 
-                HipoHeader.LOWBYTE_RECORD_SIZE, 
-                HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-        
-        int ihM = HipoByteUtils.write(0, this.index.size(),
-                HipoHeader.LOWBYTE_RECORD_EVENTCOUNT, 
-                HipoHeader.HIGHBYTE_RECORD_EVENTCOUNT
-                );
-        
-        int ihC = HipoByteUtils.write(0, headerC, 
-                HipoHeader.LOWBYTE_RECORD_SIZE, 
-                HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-        
-        ihM = HipoByteUtils.write(ihM, 1, 24, 24);
-        
-        buffer.putInt( 0, this.headerL);
-        buffer.putInt( 4, ihM);
-        buffer.putInt( 8, ihH);
-        buffer.putInt(12, ihC);
-
-        int initPos = HipoHeader.RECORD_HEADER_SIZE;
-        
-        for(int i = 0; i < this.index.size(); i++){
-            buffer.putInt(initPos, this.index.get(i));
-            initPos += 4;
-        }
-        
-        buffer.position(initPos);
-        buffer.put(dataBytesCompressed);
-        //System.out.println(" POSITION = " + initPos);
-
-        return buffer;
+    public int getBytesWritten(){
+        return this.recordBytesWritten;
     }
+    /**
+     * Builds the record into a ByteBuffer includes the Header, Index Array and Event Buffer.
+     * If compression type is specified the event buffer will be compressed, and header will
+     * contain different sizes for event size compressed and event size uncompressed.
+     * NOTE: the record Header is never compressed.
+     * @return 
+     */
+    public ByteBuffer build(){
+        
+        int totalSize = this.recordHeader.getRecordHeaderLength();        
+        int eventsSize = this.getDataBytesSize();
+        
+        recordHeader.setDataSize(eventsSize);
+        
+        byte[] eventBytes = this.buildDataBytes();
+        byte[] indexBytes = this.buildIndexBytes();
+        
+        //totalSize += eventsSize;
+        totalSize += indexBytes.length;
+        totalSize += eventBytes.length;
+        
+        recordHeader.setRecordSize(totalSize);
+        recordHeader.setDataSizeCompressed(eventBytes.length);
+        recordHeader.setCompressionType(this.compressionType);
+        recordHeader.setIndexArraySize(indexBytes.length);
+        
+        byte[]  buffer = new byte[totalSize];
+        
+        System.arraycopy(recordHeader.getRecordHeaderData(), 0, buffer, 0, recordHeader.getRecordHeaderLength());
+        System.arraycopy(indexBytes, 0, buffer, 
+                recordHeader.getRecordHeaderLength() + recordHeader.getHeaderSize(), indexBytes.length);
+        
+        int position = recordHeader.getRecordHeaderLength() + recordHeader.getHeaderSize() + indexBytes.length;
+        
+        System.arraycopy(eventBytes, 0, buffer, position, eventBytes.length);
+        /*
+        for(int i = 0; i < this.recordEvents.size(); i++){
+            byte[] event = recordEvents.get(i);
+            System.arraycopy(event, 0, buffer, position, event.length);
+            position += event.length;
+        }*/
+        
+        ByteBuffer nioBuffer = ByteBuffer.wrap(buffer);        
+        nioBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        return nioBuffer;
+    }
+        
     /**
      * sets the compression type for the record.
      * 0 - no compression
@@ -162,24 +132,89 @@ public class HipoRecord {
     public void setCompressionType(int type){
         this.compressionType = type;
         if(this.compressionType==0){
-            this.compressed(false);
+            this.recordHeader.setCompressionType(0);
             return;
         }
-        if(this.compressionType>0&&this.compressionType<3){
-            this.compressed(true);
-            headerM = HipoByteUtils.write(headerM, compressionType, 
-                    HipoHeader.LOWBYTE_RECORD_COMPRESSION_TYPE,
-                    HipoHeader.HIGHBYTE_RECORD_COMPRESSION_TYPE);
+        
+        if(this.compressionType>0&&this.compressionType<4){
+            this.recordHeader.setCompressionType(type);
         } else {
             System.out.println("[HipoRecord::compression] -----> unknown "
             + " compression type " + type + 
                     " use 1 - for GZIP and 2 - for LZ4.");
             this.compressionType = 0;
+            this.recordHeader.setCompressionType(0);
         }
     }
     
     private void initFromBinary(byte[] binary){
+
+        reset();
+        
+        byte[] header = new byte[HipoRecordHeader.RECORD_HEADER_SIZE];
+        System.arraycopy(binary, 0, header, 0, HipoRecordHeader.RECORD_HEADER_SIZE);
+        
+        recordHeader.initBinary(header);
+        
+        //System.out.println(recordHeader.toString());
+        
+
+        if(recordHeader.isValid()==false){
+            System.out.println("[HipoRecord::initBinary] ---> error : something went wrong with a record.");
+            return;
+        }
+        
+        int indexPosition  = recordHeader.getRecordHeaderLength() + recordHeader.getHeaderSize();
+        int     indexSize  = recordHeader.getIndexArraySize();
+        byte[]  indexBytes = new byte[indexSize];
+        System.arraycopy(binary, indexPosition, indexBytes, 0, indexBytes.length);
+        ByteBuffer indexBuffer = ByteBuffer.wrap(indexBytes);
+        indexBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        
+        System.out.println(" INDEX SIZE = " + indexSize);
+        List<Integer>  indexList = new ArrayList<Integer>();
+        for(int i = 0; i < indexSize; i+=4){
+            Integer index = indexBuffer.getInt(i);
+            //System.out.println("index " + i + "  size = " + index);
+            indexList.add(index);
+        }
+        
+        int    dataPosition = indexPosition + indexSize;
+        int  compressedSize = recordHeader.getDataSizeCompressed();
+        int            type = recordHeader.getCompressionType();
+        
+        compressionType = type;
+        
+        byte[]    dataBytesCompressed = new byte[compressedSize];
+        System.arraycopy(binary, dataPosition, dataBytesCompressed, 0, dataBytesCompressed.length);
+        byte[]    dataBytes = null;
+        
+        if(type==0){
+            dataBytes = dataBytesCompressed;
+        } else if(type==1) {
+            dataBytes = HipoByteUtils.ungzip(dataBytesCompressed);
+        } else if(type==2||type==3) {
+            int uncompressedSize = recordHeader.getDataSize();
+            dataBytes = new byte[uncompressedSize];
+            HipoByteUtils.uncompressLZ4(dataBytesCompressed, dataBytes);
+        }
                 
+        int eventPosition = 0;
+        
+        for(int i = 0; i < indexList.size(); i++){
+            byte[] event = new byte[indexList.get(i)];
+            System.arraycopy(dataBytes, eventPosition, event, 0, event.length);
+            this.addEvent(event);
+            eventPosition += indexList.get(i);
+        }
+        /*
+        int lastLength = dataBytes.length - eventPosition;
+        byte[]   event = new byte[lastLength];
+        System.arraycopy(dataBytes, eventPosition, event, 0, event.length);
+        this.addEvent(event);*/
+        //int   indexLength = recordHeader.
+        
+        /*
         ByteBuffer  buffer = ByteBuffer.wrap(binary);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         
@@ -227,18 +262,14 @@ public class HipoRecord {
                 
         byte[] eventdata = new byte[dataLength];
         System.arraycopy( binary, position + indexCount * 4, eventdata, 0, dataLength);
+        */
         /**
          * Check if the buffer was compressed. then uncompress the data array.
          * and retrieve byte arrays from indecies. 
          */
+        /*
         if(isCompressed==1){
-            /*
-            byte[]  gunzipped = HipoByteUtils.ungzip(eventdata);
-            if(gunzipped.length==0){
-                System.out.println("[BioRecord] ---> error : something went wrong with unzip.");
-                this.reset();
-                return;
-            }*/
+            
             if(compressionType==2){
                 byte[] gunzipped = new byte[uncompressedLength];
                 HipoByteUtils.uncompressLZ4(eventdata, gunzipped);
@@ -267,134 +298,64 @@ public class HipoRecord {
             System.arraycopy(eventdata, datapos, event, 0, event.length);
             this.events.add(event);
             datapos += size;
-        }
+        }*/
     }
-    /**
-     * Returns record as a byte array. depending on the setting of
-     * setCompressionType the buffer will be uncompressed, GZIP or LZ4.
-     * @return 
-     */
-    public ByteBuffer getByteBuffer(){
-        
-        byte[]  dataBytes = this.getDataBytes();
-        
-        int compressionByte = HipoByteUtils.read(headerM,
-                HipoHeader.LOWBYTE_RECORD_COMPRESSION,
-                HipoHeader.HIGHBYTE_RECORD_COMPRESSION);
-        
-        int compressionType = HipoByteUtils.read(headerM,
-                HipoHeader.LOWBYTE_RECORD_COMPRESSION_TYPE,
-                HipoHeader.HIGHBYTE_RECORD_COMPRESSION_TYPE);
-        
-        int ihM = HipoByteUtils.write(this.headerM, this.index.size(),
-                HipoHeader.LOWBYTE_RECORD_EVENTCOUNT, 
-                HipoHeader.HIGHBYTE_RECORD_EVENTCOUNT
-                );
-        
-        int ihC = HipoByteUtils.write(0, dataBytes.length,
-                HipoHeader.LOWBYTE_RECORD_SIZE, 
-                HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-        
-        int ihH = HipoByteUtils.write(0, dataBytes.length,
-                HipoHeader.LOWBYTE_RECORD_SIZE, 
-                HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-        
-        if(compressionByte>0){
-            if(compressionType==1){
-                byte[] compressed = HipoByteUtils.gzip(dataBytes);
-                dataBytes = compressed;
-                ihH = HipoByteUtils.write(0, dataBytes.length,
-                        HipoHeader.LOWBYTE_RECORD_SIZE, 
-                        HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-            } else {
-                byte[] compressed = HipoByteUtils.compressLZ4(dataBytes);
-                dataBytes = compressed;
-                ihH = HipoByteUtils.write(0, dataBytes.length,
-                        HipoHeader.LOWBYTE_RECORD_SIZE, 
-                        HipoHeader.HIGHBYTE_RECORD_SIZE
-                );
-            }
-        }
-        
-        int  size = HipoHeader.RECORD_HEADER_SIZE + 
-                this.index.size()*4 + 
-                dataBytes.length;
-        
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.putInt( 0, this.headerL);
-        buffer.putInt( 4, ihM);
-        buffer.putInt( 8, ihH);
-        buffer.putInt(12, ihC);
 
-        int initPos = HipoHeader.RECORD_HEADER_SIZE;
-        
-        for(int i = 0; i < this.index.size(); i++){
-            buffer.putInt(initPos, this.index.get(i));
-            initPos += 4;
-        }
-        
-        buffer.position(initPos);
-        buffer.put(dataBytes);
-        return buffer;
-    }
-    /**
-     * return ByteBuffer representation of the Record
-     * @return 
-     */
-    /*
-    public ByteBuffer getByteBuffer(){
-        
-        byte[]  dataBytes = this.getDataBytes();
-        
-        int  size = HipoHeader.RECORD_HEADER_SIZE + this.index.size()*4 + dataBytes.length;
-        
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        buffer.order(ByteOrder.LITTLE_ENDIAN);
-        //System.out.println("WR L = " + BioByteUtils.getByteString(headerL));
-        //System.out.println("WR H = " + BioByteUtils.getByteString(headerH));
-        buffer.putInt( 0, this.headerL);
-        buffer.putInt( 4, this.headerM);
-        buffer.putInt( 8, this.headerH);
-        buffer.putInt(12, this.headerC);
-        
-        int initPos = HipoHeader.RECORD_HEADER_SIZE;
-        
-        for(int i = 0; i < this.index.size(); i++){
-            buffer.putInt(initPos, this.index.get(i));
-            initPos += 4;
-        }
-        
-        buffer.position(initPos);
-        buffer.put(dataBytes);
-        //System.out.println(" POSITION = " + initPos);
-        return buffer;
-    }*/
     /**
      * returns the total size of the all events combined
      * @return 
      */
     public int    getDataBytesSize(){
         int size = 0;
-        for(byte[] array : this.events) size += array.length;
+        for(byte[] array : recordEvents) size += array.length;
         return size;
+    }
+    /**
+     * returns a byte[] array with index for each event.
+     * @return 
+     */
+    public byte[] buildIndexBytes(){
+        int indexSize = 4*recordEvents.size();
+        byte[] indexBytes = new byte[indexSize];
+        ByteBuffer buffer = ByteBuffer.wrap(indexBytes);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        for(int i = 0; i < recordEvents.size(); i++){
+            buffer.putInt(i*4, recordEvents.get(i).length);
+        }
+        return buffer.array();
     }
     /**
      * returns one byte[] containing all the events chained together
      * @return 
      */
-    public byte[] getDataBytes(){
+    public byte[] buildDataBytes(){
+        
        int size = this.getDataBytesSize();
        byte[]  dataBytes = new byte[size];
        int position = 0;
-       for(int i = 0; i < this.events.size(); i++){
-           int len = this.events.get(i).length;
-           System.arraycopy(this.events.get(i), 0, dataBytes, position, len);
+       for(int i = 0; i < recordEvents.size(); i++){
+           int len = recordEvents.get(i).length;
+           System.arraycopy(recordEvents.get(i), 0, dataBytes, position, len);
            position += len;
        }
+       
+       if(this.compressionType>0){
+           
+           if(this.compressionType==1){
+               byte[]  dataBytesCompressed = HipoByteUtils.gzip(dataBytes);
+               return dataBytesCompressed;
+           }
+           
+           if(this.compressionType==2){
+               byte[]  dataBytesCompressed = HipoByteUtils.compressLZ4(dataBytes);
+               return dataBytesCompressed;
+           }
+           
+           if(this.compressionType==3){
+               byte[]  dataBytesCompressed = HipoByteUtils.compressLZ4max(dataBytes);
+               return dataBytesCompressed;
+           }
+       }       
        return dataBytes;
     }
     /**
@@ -402,66 +363,28 @@ public class HipoRecord {
      * @return 
      */
     public int getEventCount(){
-        return this.events.size();
+        return recordEvents.size();
     }
-    /**
-     * returns event byte array for given index
-     * @param index
-     * @return 
-     */
+    
     public byte[] getEvent(int index){
-        byte[]  eventArray = new byte[this.events.get(index).length];
-        System.arraycopy(this.events.get(index), 0, eventArray, 0, eventArray.length);
-        return eventArray;
+        return this.recordEvents.get(index);
     }
     /**
      * prints on the screen information about record.
      */
-    public void show(){
-        
-        int count = HipoByteUtils.read(headerM, 
-                HipoHeader.LOWBYTE_RECORD_EVENTCOUNT,
-                HipoHeader.HIGHBYTE_RECORD_EVENTCOUNT
-                );
-        System.out.println(
-                "HL = " + HipoByteUtils.getByteString(headerL) + "\n"
-                        + "HM = " + HipoByteUtils.getByteString(headerM) + "\n"
-                        + "HH = " + HipoByteUtils.getByteString(headerH)
-        );
-        System.out.println(String.format("HEADER WORDS = %5d %5d %5d %5d", this.headerL,
-                this.headerM, this.headerH,this.headerC));
-        System.out.println(String.format(" H L/H %X %X",headerL,headerH));
-        System.out.println("RECORD ELEMENTS = " + count + "  LENGTH = " + HipoByteUtils.read(headerH,0,23));
-        for(int i = 0 ; i < this.events.size();i++){
-            System.out.println(" EVENT " + i + "  LENGTH = " + 
-                    this.events.get(i).length + "  OFFSET = " + this.index.get(i));
+    public void show(){        
+        System.out.println(this.recordHeader.toString());
+        for(int i = 0; i < recordEvents.size(); i++){
+            System.out.println(String.format("\t %3d : SIZE = %8d", i,recordEvents.get(i).length));
         }
     }
     
     /**
-     * set compression flag for the record
-     * @param flag 
-     */
-    public void     compressed(boolean flag){
-        if(flag==true){
-            headerM = HipoByteUtils.write(headerM, 1, 
-                    HipoHeader.LOWBYTE_RECORD_COMPRESSION,
-                    HipoHeader.HIGHBYTE_RECORD_COMPRESSION);
-        } else {
-            headerM = HipoByteUtils.write(headerM, 0, 
-                    HipoHeader.LOWBYTE_RECORD_COMPRESSION,
-                    HipoHeader.HIGHBYTE_RECORD_COMPRESSION);
-        }
-    }
-    /**
      * returns the value of the compression flag bit
      * @return 0 if compression flag is not set, 1 - if set
      */
-    public boolean  compressed(){
-        int ic = HipoByteUtils.read(headerM,
-                HipoHeader.LOWBYTE_RECORD_COMPRESSION,
-                    HipoHeader.HIGHBYTE_RECORD_COMPRESSION);
-        return (ic==1);
+    public boolean  compressed(){       
+        return (this.recordHeader.getCompressionType()>0);
     }
     
     public static void main(String[] args){
@@ -471,13 +394,23 @@ public class HipoRecord {
         record.addEvent(HipoByteUtils.generateByteArray(2250));
         record.addEvent(HipoByteUtils.generateByteArray(5580));
         record.addEvent(HipoByteUtils.generateByteArray(4580));
+        record.addEvent(HipoByteUtils.generateByteArray(7962));
         record.setCompressionType(2);
+        
+
+        ByteBuffer  buffer = record.build();
+        //System.out.println("BUFFER SIZE = " + buffer.array().length);
+        record.show();
+        
+        HipoRecord  restored = new HipoRecord(buffer.array());
+        restored.show();
         //record.compressed(true);
-        byte[]  record_bytes_u = record.getByteBuffer().array();
+        /*byte[]  record_bytes_u = record.getByteBuffer().array();
         
         System.out.println(" DATA RECORD LENGTH = " + record_bytes_u.length);
         
         HipoRecord  restored = new HipoRecord(record_bytes_u);
+        */
         //byte[]  record_bytes_c = record.getByteBuffer(true,1).array();        
         //record.show();        
         //System.out.println(" SIZE = " + record_bytes_u.length + "  " +

@@ -83,6 +83,7 @@ public class HipoBenchmark {
     }
     
     public static void main(String[] args){
+        
         int compression = 0;
         if(args[0].compareTo("read")==0){
             HipoBenchmark.readingBenchmark(args);

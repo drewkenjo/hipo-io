@@ -13,6 +13,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jlab.hipo.utils.HipoLogo;
 
 /**
  *
@@ -79,7 +80,7 @@ public class HipoWriter {
      * open a file and empty the record store.
      * @param name file name to write data in
      */
-    public final void open(String name){
+    public final void open(String name){        
         this.open(name, new byte[]{'E','M','P','T'});
         /*
         try {
@@ -97,6 +98,7 @@ public class HipoWriter {
      * @param array array to write as a header.
      */
     public final void open(String name, byte[] array) {
+        HipoLogo.showLogo();
         try {
             outStream = new FileOutputStream(new File(name));
             byte[]  bytes = new byte[HipoHeader.FILE_HEADER_SIZE + array.length];
@@ -141,7 +143,7 @@ public class HipoWriter {
         // The first record written is the header record. it is reserved
         // for writing configuration information.
         if(this.numberOfRecords==0){
-            byte[] header = this.headerRecord.getByteBuffer().array();
+            byte[] header = this.headerRecord.build().array();
             
             try {
                 this.outStream.write(header);
@@ -158,7 +160,7 @@ public class HipoWriter {
             try {
                 long stime_compress = System.currentTimeMillis();
                 this.outputRecord.setCompressionType(this.compressionAlgorithm);
-                byte[] array = this.outputRecord.getByteBuffer().array();
+                byte[] array = this.outputRecord.build().array();
                 long etime_compress = System.currentTimeMillis();
                 this.timeSpendOnCompression += (etime_compress-stime_compress);
                 //System.out.println("purging record with size = " + array.length );
@@ -183,7 +185,7 @@ public class HipoWriter {
      */
     public void writeEvent(byte[] event){
         this.outputRecord.addEvent(event);
-        int size = this.outputRecord.getDataBytesSize();
+        int size = this.outputRecord.getBytesWritten();
         if(size>this.MAX_RECORD_SIZE){
             this.write();
             this.outputRecord.reset();
@@ -247,7 +249,7 @@ public class HipoWriter {
      */
     public void setCompressionType(int type){
         this.compressionAlgorithm = 0;
-        if(type>0&&type<3){
+        if(type>0&&type<4){
             this.compressionAlgorithm = type;            
         }
     }
@@ -265,6 +267,7 @@ public class HipoWriter {
      * @param args 
      */
     public static void main(String[] args){
+        
         HipoWriter writer = new HipoWriter();
         //writer.setCompression(true);
         writer.addHeader("DC::dgtz");
