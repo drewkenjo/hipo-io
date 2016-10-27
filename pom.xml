@@ -4,7 +4,7 @@
 
     <groupId>org.hep.hipo</groupId>
     <artifactId>hipo</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -23,7 +23,7 @@
     </repositories>
 
 <build>
-  <finalName>hipo-1.0</finalName>
+  <finalName>hipo-2.0</finalName>
   <plugins>
     <plugin>
       <groupId>org.apache.maven.plugins</groupId>

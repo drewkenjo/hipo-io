@@ -161,6 +161,7 @@ public class HipoRecord {
 
         if(recordHeader.isValid()==false){
             System.out.println("[HipoRecord::initBinary] ---> error : something went wrong with a record.");
+            System.out.println(recordHeader.toString());
             return;
         }
         
@@ -171,7 +172,7 @@ public class HipoRecord {
         ByteBuffer indexBuffer = ByteBuffer.wrap(indexBytes);
         indexBuffer.order(ByteOrder.LITTLE_ENDIAN);
         
-        System.out.println(" INDEX SIZE = " + indexSize);
+        //System.out.println(" INDEX SIZE = " + indexSize);
         List<Integer>  indexList = new ArrayList<Integer>();
         for(int i = 0; i < indexSize; i+=4){
             Integer index = indexBuffer.getInt(i);

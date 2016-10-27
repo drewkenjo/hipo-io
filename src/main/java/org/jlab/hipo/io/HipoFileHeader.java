@@ -14,10 +14,14 @@ import java.nio.ByteOrder;
  */
 public class HipoFileHeader {
     
-    public static final int FILE_HEADER_LENGTH = 64;
+    public static final int FILE_HEADER_LENGTH = 72;
+    public static final int FILE_IDENTIFIER    = 0x4F504948;
+    public static final int FILE_VERSION       = 0x312E3056;
+    
     public static final int OFFSET_FILE_SIZE = 8;
     public static final int OFFSET_FILE_HEADER_SIZE = 12;
-    public static final byte[] HIPO_FILE_SIGNATURE_BYTES = new byte[]{'H','I','P','O','V','0','.','1'};
+    public static final byte[] HIPO_FILE_SIGNATURE_BYTES = new byte[]{'H','I','P','O','V','0','.','2'};
+
     
     ByteBuffer  fileHeader = null;
     
@@ -41,6 +45,14 @@ public class HipoFileHeader {
     public int getHeaderSize(){
         int headerSize = fileHeader.getInt(HipoFileHeader.OFFSET_FILE_HEADER_SIZE);
         return headerSize;
+    }
+    
+    public int getIdentifier(){
+        return fileHeader.getInt(0);
+    }
+    
+    public int getVersion(){
+        return fileHeader.getInt(4);
     }
     
     public int getHeaderStart(){

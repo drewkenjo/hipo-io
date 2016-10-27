@@ -31,7 +31,7 @@ public class HipoRecordHeader {
     
     
     ByteBuffer  recordHeaderBuffer = null;
-    
+    private long    positionInFile = 0;
     
     public HipoRecordHeader(){
         byte[] headerBytes = new byte[HipoRecordHeader.RECORD_HEADER_SIZE];
@@ -39,6 +39,10 @@ public class HipoRecordHeader {
         recordHeaderBuffer.order(ByteOrder.LITTLE_ENDIAN);
         for(int i = 0; i < 4; i++) recordHeaderBuffer.put(i, HipoRecordHeader.RECORD_IDENTIFIER_STRING[i]);
         reset();
+    }
+    
+    public HipoRecordHeader(byte[] array){
+        initBinary(array);
     }
     
     public final void initBinary(byte[] array){
@@ -95,8 +99,15 @@ public class HipoRecordHeader {
     public byte[] getRecordHeaderData(){
         return recordHeaderBuffer.array();
     }
-    /* Setter functions */
     
+    public long getPositionInFile(){
+        return this.positionInFile;
+    }
+    
+    /* Setter functions */
+    public void setPositionInFile(long pos){
+        this.positionInFile = pos;
+    }
     public final void setDataSize(int size){
         int result = recordHeaderBuffer.getInt(HipoRecordHeader.OFFSET_DATA_LENGTH_WORD_UNCOMPRESSED);
         result     = HipoByteUtils.write(result, size, 0, 23);
@@ -141,11 +152,11 @@ public class HipoRecordHeader {
     public String toString(){
         StringBuilder str = new StringBuilder();
         str.append("RECORD : ");
-        str.append(String.format("SIZE = %8d, # EVENTS = %9d, DATA SIZE (COMP) = (%8d , %8d), HEADER %8d, TYPE = %2d, INDEX SIZE %8d",
+        str.append(String.format("SIZE = %8d, # EVENTS = %9d, DATA SIZE (COMP) = (%8d , %8d), HEADER %8d, TYPE = %2d, INDEX SIZE %8d,  POS = %12d",
                 getRecordSize(),
                 this.getNumberOfEvents(),
                 this.getDataSize(), this.getDataSizeCompressed(), this.getHeaderSize(),
-                this.getCompressionType(),this.getIndexArraySize()));
+                this.getCompressionType(),this.getIndexArraySize(),this.getPositionInFile()));
         return str.toString();
     }
     

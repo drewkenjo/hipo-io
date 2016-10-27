@@ -80,8 +80,12 @@ public class HipoWriter {
      * open a file and empty the record store.
      * @param name file name to write data in
      */
-    public final void open(String name){        
-        this.open(name, new byte[]{'E','M','P','T'});
+    public final void open(String name){
+        if(this.headerRecord.getEventCount()==0){
+            this.open(name, new byte[0]);            
+        } else {
+            this.open(name, headerRecord.build().array());
+        }
         /*
         try {
             outStream = new FileOutputStream(new File(name));            
@@ -101,22 +105,30 @@ public class HipoWriter {
         HipoLogo.showLogo();
         try {
             outStream = new FileOutputStream(new File(name));
-            byte[]  bytes = new byte[HipoHeader.FILE_HEADER_SIZE + array.length];
-            System.arraycopy(array, 0, bytes, HipoHeader.FILE_HEADER_SIZE, array.length);
             
-            ByteBuffer  buffer = ByteBuffer.wrap(bytes);
-            buffer.order(ByteOrder.LITTLE_ENDIAN);
+            HipoFileHeader  fileHeader = new HipoFileHeader();
+            int headerRecordSize = array.length;
+            fileHeader.setHeaderSize(headerRecordSize);
             
-            buffer.putInt(0, HipoHeader.FILE_ID_STRING);
-            buffer.putInt(4, HipoHeader.FILE_VER_STRING);
-            int  headerLength = HipoByteUtils.write(0, array.length, 
-                    HipoHeader.FILE_HEADER_LENGTH_LB, 
-                    HipoHeader.FILE_HEADER_LENGTH_HB
-                    );
-            buffer.putInt(8, headerLength);
-            buffer.putInt(12,23);
-            outStream.write(buffer.array());
+            //byte[]  bytes = new byte[HipoHeader.FILE_HEADER_SIZE + array.length];
+            //System.arraycopy(array, 0, bytes, HipoHeader.FILE_HEADER_SIZE, array.length);
+            
+            //ByteBuffer  buffer = ByteBuffer.wrap(bytes);
+            //buffer.order(ByteOrder.LITTLE_ENDIAN);
+            
+            //buffer.putInt(0, HipoHeader.FILE_ID_STRING);
+            //buffer.putInt(4, HipoHeader.FILE_VER_STRING);
+            //int  headerLength = HipoByteUtils.write(0, array.length, 
+            //        HipoHeader.FILE_HEADER_LENGTH_LB, 
+            //        HipoHeader.FILE_HEADER_LENGTH_HB
+            //        );
+            //buffer.putInt(8, headerLength);
+            //buffer.putInt(12,23);
+            outStream.write(fileHeader.build().array());
+            outStream.write(array);
+            //outStream.write(array);
             this.outputRecord.reset();
+            //this.outputRecord.addEvent(array);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(HipoWriter.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
@@ -142,6 +154,7 @@ public class HipoWriter {
         // If this is the first time Things being written into the file.
         // The first record written is the header record. it is reserved
         // for writing configuration information.
+        /*
         if(this.numberOfRecords==0){
             byte[] header = this.headerRecord.build().array();
             
@@ -154,7 +167,7 @@ public class HipoWriter {
             } catch (IOException ex) {
                 Logger.getLogger(HipoWriter.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }        
+        } */
         
         if(this.outputRecord.getEventCount()!=0){
             try {
@@ -170,6 +183,7 @@ public class HipoWriter {
                 this.timeSpendOnWriting += (etime_write-stime_write);
                 this.numberOfRecords++;
                 this.totalByteWritten += array.length;
+                System.out.println("[hipo-writter] --> writing record with # events " + outputRecord.getEventCount());
                 this.outputRecord.reset();
             } catch (IOException ex) {
                 Logger.getLogger(HipoWriter.class.getName()).log(Level.SEVERE, null, ex);
@@ -269,12 +283,16 @@ public class HipoWriter {
     public static void main(String[] args){
         
         HipoWriter writer = new HipoWriter();
-        //writer.setCompression(true);
-        writer.addHeader("DC::dgtz");
-        writer.addHeader("DC::true");
+        //writer.setCompression(true);       
         
         writer.setCompressionType(2);
-        writer.open("testfile.bio");
+        writer.addHeader("DC::dgtz");
+        writer.addHeader("DC::true");
+        writer.addHeader("FTOF::true");
+        //writer.open("testfile.hipo",new byte[]{'E','M','P','T','Y'});
+        writer.open("testfile.hipo");
+        //writer.addHeader("DC::dgtz");
+        //writer.addHeader("DC::true");
         writer.setMaxRecordSize(8*1024*1024);
         for(int i = 0; i < 1400; i++){
             byte[] buffer = HipoByteUtils.generateByteArray(45000);
