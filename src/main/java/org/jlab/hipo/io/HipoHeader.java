@@ -35,7 +35,7 @@ public class HipoHeader {
     public static int  FILE_HEADER_LENGTH_LB       = 0;
     public static int  FILE_HEADER_LENGTH_HB       = 23;
     
-    public static int  LOWBYTE_RECORD_STRINGID = 0;
+    public static int  LOWBYTE_RECORD_STRINGID  = 0;
     public static int  HIGHBYTE_RECORD_STRINGID = 0;
     
 

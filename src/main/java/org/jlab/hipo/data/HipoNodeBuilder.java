@@ -43,10 +43,11 @@ public class HipoNodeBuilder<T extends Number> {
         if(containerLimit<0){
             container.add(value);
         } else {
-            if(containerLimit<container.size()){
+            if(containerLimit>container.size()){
              container.add(value);
             } else {
-                System.out.println("[HipoNodeBuilder] warning : container is full, no value added");
+                System.out.println("[HipoNodeBuilder] warning : container is full, no value added "
+                + " size = " + container.size() + "  limit = " + containerLimit);
             }
         }
     }
@@ -116,6 +117,15 @@ public class HipoNodeBuilder<T extends Number> {
                 for(int i = 0; i < container.size(); i++){
                     Float itemValue = (Float) container.get(i);
                     nodeFloat.setFloat(i, itemValue);
+                }
+                return nodeFloat;
+            }
+            if(value instanceof Double){
+                HipoNode nodeFloat = new HipoNode(group,item,
+                        HipoNodeType.DOUBLE,container.size());
+                for(int i = 0; i < container.size(); i++){
+                    Double itemValue = (Double) container.get(i);
+                    nodeFloat.setDouble(i, itemValue);
                 }
                 return nodeFloat;
             }

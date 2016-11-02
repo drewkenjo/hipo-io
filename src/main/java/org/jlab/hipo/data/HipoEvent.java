@@ -60,10 +60,10 @@ public class HipoEvent {
         
         System.arraycopy(eventBuffer.array(), 0, dataBuffer, 0, eventLength);
         System.arraycopy(data, 0, dataBuffer, position, node.getBufferSize());
-        
+        /*
         for(int i = 0; i < dataBuffer.length; i++){
             System.out.print(String.format("%3X", dataBuffer[i]));
-        }
+        }*/
         eventBuffer = ByteBuffer.wrap(dataBuffer);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);        
     }
