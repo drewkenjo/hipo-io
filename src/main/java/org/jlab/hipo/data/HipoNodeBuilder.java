@@ -120,6 +120,15 @@ public class HipoNodeBuilder<T extends Number> {
                 }
                 return nodeFloat;
             }
+            if(value instanceof Short){
+                HipoNode nodeFloat = new HipoNode(group,item,
+                        HipoNodeType.SHORT,container.size());
+                for(int i = 0; i < container.size(); i++){
+                    Short itemValue = (Short) container.get(i);
+                    nodeFloat.setShort(i, itemValue);
+                }
+                return nodeFloat;
+            }
             if(value instanceof Double){
                 HipoNode nodeFloat = new HipoNode(group,item,
                         HipoNodeType.DOUBLE,container.size());
