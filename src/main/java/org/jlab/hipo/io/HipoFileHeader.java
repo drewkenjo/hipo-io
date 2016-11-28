@@ -23,7 +23,8 @@ public class HipoFileHeader {
     public static final byte[] HIPO_FILE_SIGNATURE_BYTES = new byte[]{'H','I','P','O','V','0','.','2'};
 
     
-    ByteBuffer  fileHeader = null;
+    private  ByteBuffer  fileHeader    = null;
+    private  Boolean     isHeaderValid = false;
     
     public HipoFileHeader(){
         byte[] header = new byte[HipoFileHeader.FILE_HEADER_LENGTH];
@@ -31,15 +32,25 @@ public class HipoFileHeader {
         fileHeader.order(ByteOrder.LITTLE_ENDIAN);
         for(int i = 0 ; i < 8; i++) fileHeader.put(i, HipoFileHeader.HIPO_FILE_SIGNATURE_BYTES[i]);
         this.setHeaderSize(0);
+        this.isHeaderValid = true;
     }
     
     public HipoFileHeader(byte[] header){
         fileHeader = ByteBuffer.wrap(header);
         fileHeader.order(ByteOrder.LITTLE_ENDIAN);
+        this.isHeaderValid = true;
+        if(fileHeader.getInt(0)!=HipoFileHeader.FILE_IDENTIFIER){
+            System.out.println("[Hipo-File] ---> error : this is not a HIPO File.");
+            this.isHeaderValid = false;
+        }
     }
     
     public int getRecordStart(){
         return HipoFileHeader.FILE_HEADER_LENGTH + getHeaderSize();
+    }
+    
+    public boolean isValid(){
+        return this.isHeaderValid;
     }
     
     public int getHeaderSize(){
@@ -66,4 +77,5 @@ public class HipoFileHeader {
     public ByteBuffer build(){
         return this.fileHeader;
     }
+        
 }

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -59,6 +60,24 @@ public class HipoReader {
     public HipoReader(){
         
     }
+    
+    public void open(InputStream inStream){
+        //this.inputStream = inStream;                
+    }
+    
+    
+    public List<HipoRecordHeader>  readRecordIndex(InputStream stream){
+        try {
+            //stream.reset();
+            byte[]  fileHeader   = new byte[HipoFileHeader.FILE_HEADER_LENGTH];
+             stream.read(fileHeader);            
+            HipoFileHeader header = new HipoFileHeader(fileHeader);
+            System.out.println(header.toString());
+        } catch (IOException ex) {
+            Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
     /**
      * Open file for reading. automatically reads file index in of records.
      * the event index is not actually read.
@@ -106,9 +125,6 @@ public class HipoReader {
                     HipoHeader.FILE_HEADER_LENGTH_LB,
                     HipoHeader.FILE_HEADER_LENGTH_HB);
             */
-            
-            
-            
             
             if(identifier==HipoFileHeader.FILE_IDENTIFIER){
                 firstRecordOffset = header.getRecordStart();
