@@ -82,7 +82,9 @@ public class HipoWriter {
      */
     public final void open(String name){
         if(this.headerRecord.getEventCount()==0){
-            this.open(name, new byte[0]);            
+            this.addHeader("{undefined-header}");
+            this.open(name, headerRecord.build().array());
+            //this.open(name, new byte[0]);    
         } else {
             this.open(name, headerRecord.build().array());
         }
