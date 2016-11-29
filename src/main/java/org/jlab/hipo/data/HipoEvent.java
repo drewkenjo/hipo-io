@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jlab.hipo.schema.Schema;
+import org.jlab.hipo.schema.SchemaFactory;
 
 /**
  *
@@ -21,9 +23,13 @@ import java.util.Map;
 public class HipoEvent {
     
     ByteBuffer           eventBuffer = null;
-    List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();
     
+    List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();    
     Map<Integer,GroupNodeIndexList>  groupsIndex = new LinkedHashMap<Integer,GroupNodeIndexList>();
+    
+    
+    private final SchemaFactory    eventSchemaFactory = new SchemaFactory();
+        
     
     public HipoEvent(){
         byte[] header = new byte[8];
@@ -35,6 +41,19 @@ public class HipoEvent {
         eventBuffer = ByteBuffer.wrap(header);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
     }
+    
+    public HipoEvent(SchemaFactory factory){        
+        byte[] header = new byte[8];
+        header[0] = 'E';
+        header[1] = 'V';
+        header[2] = 'N';
+        header[3] = 'T';
+        
+        eventBuffer = ByteBuffer.wrap(header);
+        eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        eventSchemaFactory.copy(factory);
+    }
+    
     /**
      * Initialize HipoEvent from a byte array. 
      * @param buffer 
@@ -45,6 +64,12 @@ public class HipoEvent {
         updateNodeIndex();
     }
     
+    public HipoEvent(byte[] buffer, SchemaFactory factory){        
+        eventBuffer = ByteBuffer.wrap(buffer);
+        eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        updateNodeIndex();
+        eventSchemaFactory.copy(factory);
+    }
     /**
      * Add a single node to the event.
      * @param node HipoNode to add to the event.
@@ -91,6 +116,7 @@ public class HipoEvent {
         }
         eventBuffer = ByteBuffer.wrap(dataBuffer);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
+        this.updateNodeIndex();
     }
     /**
      * updates the index of the 
@@ -130,6 +156,28 @@ public class HipoEvent {
             //eventIndex.add(index);
             position += 8 + size;
         }
+    }
+    
+    /**
+     * writes all the nodes in the group into the event.
+     * @param group group containing nodes
+     */
+    public void writeGroup(HipoGroup group){
+        List<HipoNode> nodes = group.getNodes();
+        this.addNodes(nodes);
+    }
+    /**
+     * returns a group of nodes for given Schema.
+     * @param name name of the Schema
+     * @return group containing HipoNodes
+     */
+    public HipoGroup getGroup(String name){
+        if(this.eventSchemaFactory.hasSchema(name)==true){
+            Schema schema = this.eventSchemaFactory.getSchema(name);
+            Map<Integer,HipoNode> nodes = getGroup(schema.getGroup());
+            return new HipoGroup(nodes,schema);
+        }
+        return null;
     }
     /**
      * Return string representation of the event.
@@ -182,7 +230,9 @@ public class HipoEvent {
     public boolean hasGroup(int group){
         return this.groupsIndex.containsKey(group);
     }
-        
+    
+    public SchemaFactory  getSchemaFactory(){ return this.eventSchemaFactory;}
+    
     public Map<Integer,HipoNode>  getGroup(int group){
         Map<Integer,HipoNode> groupNodes = new LinkedHashMap<Integer,HipoNode>();
         if(this.groupsIndex.containsKey(group)==true){

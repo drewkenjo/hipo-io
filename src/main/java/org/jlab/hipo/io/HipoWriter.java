@@ -13,6 +13,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jlab.hipo.data.HipoEvent;
+import org.jlab.hipo.schema.Schema;
+import org.jlab.hipo.schema.SchemaFactory;
 import org.jlab.hipo.utils.HipoLogo;
 
 /**
@@ -21,6 +24,10 @@ import org.jlab.hipo.utils.HipoLogo;
  */
 public class HipoWriter {
     
+    public static int DICTIONARY   = 1;
+    public static int CUSTOMHEADER = 2;
+    
+    private int writerDictionaryMode = HipoWriter.DICTIONARY;
     /**
      * output stream used for writing binary data to the file.
      */
@@ -63,6 +70,8 @@ public class HipoWriter {
     
     boolean  streamCompression = false;
     
+    private  final SchemaFactory  schemaFactory = new SchemaFactory();
+    
     public HipoWriter(){
         this.outputRecord = new HipoRecord(); 
         this.headerRecord = new HipoRecord();
@@ -81,12 +90,19 @@ public class HipoWriter {
      * @param name file name to write data in
      */
     public final void open(String name){
-        if(this.headerRecord.getEventCount()==0){
-            this.addHeader("{undefined-header}");
+        
+        if(this.writerDictionaryMode==HipoWriter.DICTIONARY){
+            HipoEvent schema = this.schemaFactory.getSchemaEvent();
+            this.headerRecord.addEvent(schema.getDataBuffer());
             this.open(name, headerRecord.build().array());
-            //this.open(name, new byte[0]);    
         } else {
-            this.open(name, headerRecord.build().array());
+            if(this.headerRecord.getEventCount()==0){
+                this.addHeader("{undefined-header}");
+                this.open(name, headerRecord.build().array());
+                //this.open(name, new byte[0]);    
+            } else {
+                this.open(name, headerRecord.build().array());
+            }
         }
         /*
         try {
@@ -208,6 +224,13 @@ public class HipoWriter {
         }
     }
     /**
+     * writes a HipoEvent into a record. 
+     * @param event HipoEvent class
+     */
+    public void writeEvent(HipoEvent event){
+        this.writeEvent(event.getDataBuffer());
+    }
+    /**
      * destructor substitute. it has to be called at the end of program
      * to make sure the incomplete record is flushed to the file, and file stream
      * is properly closed.
@@ -278,6 +301,23 @@ public class HipoWriter {
     public void setMaxRecordSize(int maxSize){
         this.MAX_RECORD_SIZE = maxSize;
     }
+    
+    public void defineSchema(Schema schema){
+        this.schemaFactory.addSchema(schema);
+    }
+    /**
+     * Returns the Schema factory of the writer.
+     * @return 
+     */
+    public SchemaFactory getSchemaFactory(){ return this.schemaFactory;}
+    /**
+     * Create a new HipoEvent with SchemaFactory of the writer.
+     * @return HipoEvent object with Schema factory
+     */
+    public HipoEvent     createEvent(){
+        HipoEvent event = new HipoEvent(this.schemaFactory);
+        return event;
+    }
     /**
      * Main program to run internal tests and validations.
      * @param args 
@@ -285,21 +325,25 @@ public class HipoWriter {
     public static void main(String[] args){
         
         HipoWriter writer = new HipoWriter();
-        //writer.setCompression(true);       
-        
+        //writer.setCompression(true);            
         writer.setCompressionType(2);
+        writer.defineSchema(new Schema("{20,GenPart::true}[1,pid,INT][2,px,FLOAT][3,py,FLOAT][4,pz,FLOAT][5,vx,FLOAT][6,vy,FLOAT][7,vz,FLOAT]"));
+        /*
         writer.addHeader("DC::dgtz");
         writer.addHeader("DC::true");
-        writer.addHeader("FTOF::true");
+        writer.addHeader("FTOF::true");*/
         //writer.open("testfile.hipo",new byte[]{'E','M','P','T','Y'});
         writer.open("testfile.hipo");
         //writer.addHeader("DC::dgtz");
         //writer.addHeader("DC::true");
-        writer.setMaxRecordSize(8*1024*1024);
+        /*writer.setMaxRecordSize(8*1024*1024);
         for(int i = 0; i < 1400; i++){
             byte[] buffer = HipoByteUtils.generateByteArray(45000);
             writer.writeEvent(buffer);
-        }
+        }*/
+        HipoEvent event = writer.createEvent();        
+        
+        writer.writeEvent(event);
         writer.close();
     }
 }
