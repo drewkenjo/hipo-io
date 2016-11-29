@@ -8,6 +8,7 @@ package org.jlab.hipo.schema;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jlab.hipo.data.HipoNode;
 import org.jlab.hipo.data.HipoNodeType;
 import org.jlab.hipo.utils.ArrayUtils;
 
@@ -34,6 +35,15 @@ public class Schema {
     public Schema(String n, int grp){
         this.setName(n);
         this.setGroup(grp);
+    }
+    
+    public Map<Integer,HipoNode>  createNodeMap(int size){
+        Map<Integer,HipoNode>  map = new HashMap<Integer,HipoNode>();
+        for(Map.Entry<Integer,SchemaEntry>  entry : this.idEntries.entrySet()){
+            HipoNode node = new HipoNode(this.getGroup(),entry.getValue().getId(),entry.getValue().getType(),size);
+            map.put(entry.getValue().getId(), node);
+        }
+        return map;
     }
     
     public void addEntry(SchemaEntry entry){
