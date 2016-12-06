@@ -51,7 +51,7 @@ public class HipoGroup {
             System.out.println("[addNode] error --> Schema entry item = " + node.getItem()
             + " has type = " + entry.getType().getName() + ". Node has type = " + node.getType().getName());
             return;
-        }        
+        }
         groupNodes.put(node.getItem(), node);
     }
     /**

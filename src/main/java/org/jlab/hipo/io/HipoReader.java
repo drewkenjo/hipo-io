@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jlab.hipo.data.HipoEvent;
+import org.jlab.hipo.schema.SchemaFactory;
 import org.jlab.hipo.utils.HipoLogo;
 
 /**
@@ -36,6 +38,7 @@ public class HipoReader {
     int                     debugMode = 10;
     List<HipoRecordHeader>  readerRecords = new ArrayList<HipoRecordHeader>();
     
+    private final SchemaFactory  schemaFactory = new SchemaFactory();
     /**
      * parameters to keep statistics information about the performance
      * of the reader
@@ -66,11 +69,11 @@ public class HipoReader {
     }
     
     
-    public List<HipoRecordHeader>  readRecordIndex(InputStream stream){
+    private List<HipoRecordHeader>  readRecordIndex(InputStream stream){
         try {
             //stream.reset();
             byte[]  fileHeader   = new byte[HipoFileHeader.FILE_HEADER_LENGTH];
-             stream.read(fileHeader);            
+            stream.read(fileHeader);
             HipoFileHeader header = new HipoFileHeader(fileHeader);
             System.out.println(header.toString());
         } catch (IOException ex) {
@@ -88,7 +91,8 @@ public class HipoReader {
         try {
             this.inputStream = new FileInputStream(new File(name));
             this.readRecordIndex(readerRecords);
-            
+            //System.out.println(" HEADER RECORD = " + this.headerRecord.getEventCount());
+            this.initSchemaFactory();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -101,6 +105,19 @@ public class HipoReader {
         //HipoLogo.showVersion(0);
         //show();
     }
+    
+    private void initSchemaFactory(){
+        if(this.headerRecord!=null){
+            for(int i = 0; i < this.headerRecord.getEventCount(); i++){
+                byte[] buffer = this.headerRecord.getEvent(i);
+                HipoEvent event = new HipoEvent(buffer);
+                this.schemaFactory.setFromEvent(event);
+            }
+            //this.schemaFactory.show();
+        }
+    }
+    
+    public SchemaFactory getSchemaFactory(){ return this.schemaFactory;}
     /**
      * Reads the index of the records from the file. if problem occurs, the 
      * then the problematic record is written to the list containing corrupt
@@ -134,7 +151,7 @@ public class HipoReader {
                     byte[] fh = new byte[sizeWord];                    
                     this.inputStream.getChannel().position(HipoFileHeader.FILE_HEADER_LENGTH);
                     this.inputStream.read(fh);
-                    this.headerRecord = new HipoRecord(fh);                
+                    this.headerRecord = new HipoRecord(fh);
                 }
                 System.out.println("[hipo-reader] ---> header record is read successfully : # events = " + headerRecord.getEventCount());
             } else {
@@ -239,6 +256,12 @@ public class HipoReader {
             icount++;
         }
         return -1;
+    }
+    
+    public HipoEvent readHipoEvent(int pos){
+        byte[] buffer = this.readEvent(pos);
+        HipoEvent  event = new HipoEvent(buffer,this.schemaFactory);
+        return event;
     }
     
     public byte[] readEvent(int pos){

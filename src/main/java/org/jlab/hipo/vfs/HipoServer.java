@@ -40,7 +40,7 @@ public class HipoServer {
             
             System.out.println(" MARKABLE " + stream.markSupported());
             HipoReader reader = new HipoReader();
-            reader.readRecordIndex(stream);
+            //reader.readRecordIndex(stream);
             //byte[] buffer = new byte[20];            
             //while( (stream.read(buffer)==20)){
             //    System.out.println(new String(buffer));

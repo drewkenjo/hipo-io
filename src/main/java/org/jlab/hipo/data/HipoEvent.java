@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import org.jlab.hipo.schema.Schema;
 import org.jlab.hipo.schema.SchemaFactory;
+import org.jlab.hipo.utils.TextTable;
 
 /**
  *
@@ -200,6 +201,25 @@ public class HipoEvent {
         return this.eventBuffer.array();
     }
     
+    public void show(){
+        TextTable table = new TextTable("id:name:entries:group:items","4:24:12:9:9");
+        //System.out.println("+------------------------------------------------------------+");
+        Integer counter = 0;
+        for(Map.Entry<Integer,GroupNodeIndexList>  entry : this.groupsIndex.entrySet()){
+            String name = "N/A";
+            if(this.eventSchemaFactory.hasSchema(entry.getKey())==true){
+                name = this.eventSchemaFactory.getSchema(entry.getKey()).getName();
+            }
+            Integer size = entry.getValue().getItemList().size();
+            table.addData(new String[]{counter.toString(), name, "5", entry.getKey().toString(),size.toString()});
+            //System.out.println(String.format("|%24d | %-24s | %5d |", 
+            //        entry.getKey(), name, entry.getValue().getItemList().size()));
+            counter++;
+        }
+        //System.out.println("+------------------------------------------------------------+");
+        System.out.println(table.toString());
+        
+    }
     
     public HipoNode getNode(int group, int item){
         

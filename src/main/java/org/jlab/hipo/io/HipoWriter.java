@@ -61,15 +61,14 @@ public class HipoWriter {
     /**
      * parameters to keep track of the data that passes through the writing process.
      */
-    long     totalByteWritten       = (long) 0;
-    long     totalBytesInRecords    = (long) 0;
-    long     numberOfRecords        = (long) 0;
-    long     timeSpendOnWriting     = (long) 0;
-    long     timeSpendOnCompression = (long) 0;
-    int      compressionAlgorithm   = 0;
+    private long     totalByteWritten       = (long) 0;
+    private long     totalBytesInRecords    = (long) 0;
+    private long     numberOfRecords        = (long) 0;
+    private long     timeSpendOnWriting     = (long) 0;
+    private long     timeSpendOnCompression = (long) 0;
+    private int      compressionAlgorithm   = 0;
     
-    boolean  streamCompression = false;
-    
+    private boolean  streamCompression = false;   
     private  final SchemaFactory  schemaFactory = new SchemaFactory();
     
     public HipoWriter(){
@@ -92,6 +91,7 @@ public class HipoWriter {
     public final void open(String name){
         
         if(this.writerDictionaryMode==HipoWriter.DICTIONARY){
+            System.out.println("[HipoWriter] --->  initialize with dictionary. Schema count # ");
             HipoEvent schema = this.schemaFactory.getSchemaEvent();
             this.headerRecord.addEvent(schema.getDataBuffer());
             this.open(name, headerRecord.build().array());
@@ -300,6 +300,10 @@ public class HipoWriter {
      */
     public void setMaxRecordSize(int maxSize){
         this.MAX_RECORD_SIZE = maxSize;
+    }
+    
+    public void defineSchema(String name, int group, String format){
+        this.schemaFactory.addSchema(new Schema(name,group,format));
     }
     
     public void defineSchema(Schema schema){

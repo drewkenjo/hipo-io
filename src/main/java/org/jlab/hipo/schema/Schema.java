@@ -8,9 +8,11 @@ package org.jlab.hipo.schema;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jlab.hipo.data.HipoGroup;
 import org.jlab.hipo.data.HipoNode;
 import org.jlab.hipo.data.HipoNodeType;
 import org.jlab.hipo.utils.ArrayUtils;
+import org.jlab.hipo.utils.TextTable;
 
 /**
  *
@@ -26,6 +28,12 @@ public class Schema {
     
     public Schema(){
         
+    }
+    
+    public Schema(String n, int g, String format){
+        this.name = n;
+        this.group = g;
+        this.parseString(format);
     }
     
     public Schema(String format){
@@ -92,16 +100,39 @@ public class Schema {
         }
         return true;
     }
+    /**
+     * Creates a group from Schema where all nodes have the same set size given
+     * by the argument.
+     * @param size number of entries in each node.
+     * @return HipoGroup
+     */
+    public HipoGroup  createGroup(int size){
+        Map<Integer,HipoNode>  nodes = new HashMap<Integer,HipoNode>();
+        for(Map.Entry<Integer,SchemaEntry> entry : this.idEntries.entrySet()){
+            HipoNode node = new HipoNode(this.group,entry.getKey(),entry.getValue().getType(),size);
+            nodes.put(entry.getKey(), node);
+        }
+        HipoGroup hipogroup = new HipoGroup(nodes,this);
+        return hipogroup;
+    }
     
     @Override
     public String toString(){
-        StringBuilder str = new StringBuilder();
+        
+        TextTable  table = new TextTable("name:id:type","24:8:18");
+        
+        
+        //StringBuilder str = new StringBuilder();
+        /*
         str.append(String.format(" Schema {%12s} , group = {%d}\n", name,group));
+        */
         for(Map.Entry<Integer,SchemaEntry> entry : this.idEntries.entrySet()){
-            str.append(entry.getValue().toString());
-            str.append("\n");
+            table.addData(new String[]{entry.getValue().getName(),
+                entry.getKey().toString(),entry.getValue().getType().getName()});
+            //str.append(entry.getValue().toString());
+            //str.append("\n");
         }
-        return str.toString();
+        return table.toString();
     }
     /**
      * Schema entry class for keeping information on each entry
@@ -174,6 +205,34 @@ public class Schema {
         }
     }
     
+    private HipoNodeType getTypeByString(String typeString){
+        if(typeString.length()==1&&typeString.compareTo("F")==0) return HipoNodeType.FLOAT;
+        if(typeString.length()==1&&typeString.compareTo("I")==0) return HipoNodeType.INT;
+        if(typeString.length()==1&&typeString.compareTo("B")==0) return HipoNodeType.BYTE;
+        if(typeString.length()==1&&typeString.compareTo("L")==0) return HipoNodeType.LONG;
+        if(typeString.length()==1&&typeString.compareTo("S")==0) return HipoNodeType.SHORT;
+        if(typeString.length()==1&&typeString.compareTo("D")==0) return HipoNodeType.DOUBLE;
+        return HipoNodeType.UNDEFINED;
+    }
+    
+    public final void parseString(String format){
+        String[] tokens = format.split(":");
+        for(int i = 0; i < tokens.length; i++){
+            int itemid = i + 1;
+            if(tokens[i].contains("/")==true){
+                String[] items = tokens[i].split("/");
+                HipoNodeType type = this.getTypeByString(items[1]);
+                if(type==HipoNodeType.UNDEFINED){
+                    System.out.println("[parse] error : unknown type " + items[1] + " for entry " + items[0]);
+                } else {
+                    this.addEntry(items[0],itemid,type);
+                }
+            } else {
+                this.addEntry(tokens[i], itemid, HipoNodeType.INT);
+            }
+        }
+    }
+    
     public static void main(String[] args){
         Schema schema = new Schema("DC::dgtz",300);
         schema.addEntry("sector", 1, HipoNodeType.INT);
@@ -186,5 +245,8 @@ public class Schema {
         Schema newSchema = new Schema();
         newSchema.setFromText(schema.getText());
         System.out.println(newSchema);
+        
+        Schema formated = new Schema("Particle",300,"pid/I:px/F:py/F:pz/F");
+        System.out.println(formated);
     }
 }
