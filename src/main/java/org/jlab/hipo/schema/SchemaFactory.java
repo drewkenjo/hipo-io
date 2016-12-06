@@ -23,6 +23,7 @@ import org.jlab.hipo.json.Json;
 import org.jlab.hipo.json.JsonArray;
 import org.jlab.hipo.json.JsonObject;
 import org.jlab.hipo.json.JsonValue;
+import org.jlab.hipo.utils.FileUtils;
 
 /**
  *
@@ -194,7 +195,29 @@ public class SchemaFactory {
         return HipoNodeType.UNDEFINED;
     }
     
+    public void initFromDirectory(String directory){
+        this.schemaStore.clear();
+        this.schemaStoreGroups.clear();
+        List<Schema> dirSchemas = this.readSchemaDirectory(directory);
+        for(Schema schema : dirSchemas){
+            this.addSchema(schema);
+        }
+    }
+    
+    public List<Schema> readSchemaDirectory(String directory){
+        List<String> fileList = FileUtils.getFileListInDir(directory, ".json");
+        List<Schema> dirScemas = new ArrayList<Schema>();
+        for(String file : fileList){
+            System.out.println("[readSchemaDirectory] processing file -> " + file);
+            List<Schema> fileSchemas = this.readSchemaFile(file);
+            dirScemas.addAll(fileSchemas);
+        }
+        return dirScemas;
+    }
+    
     public List<Schema>  readSchemaFile(String filename){
+        
+        List<Schema>  schemas = new ArrayList<Schema>();
         try {
             
             Reader reader = new FileReader(filename);
@@ -205,7 +228,7 @@ public class SchemaFactory {
                 String bankName = bankDesc.get("bank").asString();
                 Integer groupId = bankDesc.get("group").asInt();
                 
-                System.out.println("----> processing bank : " + bankName + "  group = " + groupId);
+                //System.out.println("----> processing bank : " + bankName + "  group = " + groupId);
                 JsonArray  items = bankDesc.get("items").asArray();
                 Schema desc = new Schema(bankName,groupId);
                 for(JsonValue item : items.values()){
@@ -217,11 +240,12 @@ public class SchemaFactory {
                     if(type==HipoNodeType.UNDEFINED){
                         System.out.println(" error parsing type = " + itemType);
                     } else {
-                        System.out.println("\t----> processing entry " + itemName + " id = " + itemId + " type = " + type );
+                        //System.out.println("\t----> processing entry " + itemName + " id = " + itemId + " type = " + type );
                         desc.addEntry(itemName, itemId, type);
                     }
                 }
-                this.addSchema(desc);
+                //this.addSchema(desc);
+                schemas.add(desc);
             }
             
             
@@ -241,7 +265,7 @@ public class SchemaFactory {
         } catch (IOException ex) {
             Logger.getLogger(SchemaFactory.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
+        return schemas;
     }
     
     public static void main(String[] args){
