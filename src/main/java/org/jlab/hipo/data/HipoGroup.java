@@ -76,5 +76,28 @@ public class HipoGroup {
         }
         return nodes;
     }
-        
+    
+    public int getMaxSize(){
+        int size = 0;
+        for(Map.Entry<Integer,HipoNode> entry : this.groupNodes.entrySet()){
+            if(entry.getValue().getDataSize()>size) size = entry.getValue().getDataSize();
+        }
+        return size;
+    }
+    
+    public Schema getSchema(){ return this.groupSchema;}
+    public void show(){
+        System.out.println("------------------------+---------------------------+");
+        System.out.println(String.format(">>>> GROUP (group=%6d) (name=%s):", this.groupSchema.getGroup(),this.groupSchema.getName()));
+        System.out.println("------------------------+---------------------------+");
+        for(Map.Entry<Integer,HipoNode> entry : this.groupNodes.entrySet()){
+            int key = entry.getKey();
+
+            String name = this.groupSchema.getEntry(key).getName();
+            System.out.println(String.format("%12s (%8s) : %s", name,entry.getValue().getType().getName(),
+                    entry.getValue().getDataString()));
+        }
+        System.out.println("------------------------+---------------------------+");
+
+    }
 }

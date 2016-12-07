@@ -144,6 +144,7 @@ public class HipoReader {
             */
             
             if(identifier==HipoFileHeader.FILE_IDENTIFIER){
+                
                 firstRecordOffset = header.getRecordStart();
                 headerLength      = header.getHeaderSize();
                  

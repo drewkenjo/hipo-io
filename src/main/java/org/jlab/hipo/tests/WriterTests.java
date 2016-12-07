@@ -42,12 +42,12 @@ public class WriterTests {
         int nevents = 500;
         
         for(int i = 0; i < nevents; i++){
-            HipoGroup bank = writer.getSchemaFactory().getSchema("Event").createGroup(1);
+            HipoGroup bank = writer.getSchemaFactory().getSchema("Event").createGroup(4);
             bank.getNode("id").setInt(0, 211);
             bank.getNode("px").setFloat(0, (float) Math.random());
             bank.getNode("py").setFloat(0, (float) Math.random());
             bank.getNode("pz").setFloat(0, (float) Math.random());
-            
+            bank.show();
             HipoEvent event = writer.createEvent();
             event.writeGroup(bank);
             writer.writeEvent(event);
@@ -64,12 +64,12 @@ public class WriterTests {
     
     public static void main(String[] args){
         
-        WriterTests.writeWithDictionary();
-        /*
-        WriterTests.readSchemaFactory();
+        //WriterTests.writeWithDictionary();
+        
+        //WriterTests.readSchemaFactory();
         
         WriterTests.writeNtuple();
-        
+        /*
         HipoReader reader = new HipoReader();
         reader.open("hipo_test_ntuple.hipo");
         

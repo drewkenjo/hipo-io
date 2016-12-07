@@ -68,6 +68,10 @@ public class Schema {
         //this.addEntry(new SchemaEntry(n,id,type));
     }
     
+    public int getEntries(){
+        return this.idEntries.size();
+    }
+    
     public SchemaEntry  getEntry(String name){
         return this.nameEntries.get(name);
     }

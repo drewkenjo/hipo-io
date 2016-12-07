@@ -14,11 +14,59 @@ public class FileUtils {
         }
         return accepted;
     }
+    
+    public static String getEnvironmentPath(String env, String dir){
+        String envDir = System.getenv(env);
+        String proDir = System.getProperty(env);
+        if(proDir!=null){
+            StringBuilder str = new StringBuilder();
+            str.append(proDir);
+            if(proDir.endsWith("/")==false) str.append("/");
+            str.append(dir);
+            String fullPath = str.toString();
+            File dirFile = new File(fullPath);
+            if(dirFile.exists()==false){
+                System.out.println("[FileUtils] ---> directory does not exist : " + fullPath);
+                return null;
+            }
+            return str.toString();
+        }
+        
+        if(envDir!=null){
+            StringBuilder str = new StringBuilder();
+            str.append(envDir);
+            if(envDir.endsWith("/")==false) str.append("/");
+            str.append(dir);
+            String fullPath = str.toString();
+            File dirFile = new File(fullPath);
+            if(dirFile.exists()==false){
+                System.out.println("[FileUtils] ---> directory does not exist : " + fullPath);
+                return null;
+            }
+            return str.toString();
+        }
+        System.out.println("[FileUtils] ----> error : Environment variable " + env + " is not set");
+        return null;
+    }
+    
+    public static List<String>  getFileListInDir(String env, String directory, String ext){
+        String envDirectory = FileUtils.getEnvironmentPath(env, directory);
+        if(envDirectory==null){
+            return new ArrayList<String>();
+        }
+        return FileUtils.getFileListInDir(envDirectory, ext);
+    }
+    
    public static List<String>  getFileListInDir(String directory){        
-
+       
+       System.out.println(">>> scanning directory : " + directory);
         List<String> fileList = new ArrayList<String>();
         File[] files = new File(directory).listFiles();
-        System.out.println("FILE LIST LENGTH = " + files.length);
+        if(files==null){
+            System.out.println(">>> scanning directory : directory does not exist");
+            return fileList;
+        }
+        //System.out.println("FILE LIST LENGTH = " + files.length);
         for (File file : files) {
             if (file.isFile()) {
                 if(file.getName().startsWith(".")==true||

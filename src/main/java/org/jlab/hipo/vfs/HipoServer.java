@@ -5,19 +5,6 @@
  */
 package org.jlab.hipo.vfs;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import static java.lang.System.in;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.VFS;
-import org.jlab.hipo.io.HipoReader;
-
 /**
  *
  * @author gavalian
@@ -26,7 +13,7 @@ public class HipoServer {
     public HipoServer(){
         
     }
-    
+    /*
     public void open(String server){
         try {
             FileSystemManager fsManager = VFS.getManager();
@@ -46,7 +33,7 @@ public class HipoServer {
             //    System.out.println(new String(buffer));
             //}
             //BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            /*
+           
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream)); 
             
             System.out.println("READER READY = " + reader.ready());
@@ -61,18 +48,18 @@ public class HipoServer {
             for ( int i = 0; i < children.length; i++ )
             {
                 System.out.println( children[ i ].getName().getBaseName() );
-            }*/
+            }
         } catch (FileSystemException ex) {
             Logger.getLogger(HipoServer.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(HipoServer.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
+    }*/
     
     public static void main(String[] args){
-        HipoServer server = new HipoServer();
+        //HipoServer server = new HipoServer();
         //server.open("https://userweb.jlab.org/~gavalian/DataMiningTools/TupleRead.py");
-        server.open("https://userweb.jlab.org/~gavalian/data/reco_eklambda_dst.hipo");
+        //server.open("https://userweb.jlab.org/~gavalian/data/reco_eklambda_dst.hipo");
         //server.open("sftp://gavalian:S4t:Urn5@ftp.jlab.org/pim_datatables_5D.txt");
         
     }

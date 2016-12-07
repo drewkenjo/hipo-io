@@ -210,6 +210,7 @@ public class HipoNode {
         System.arraycopy(nodeBuffer.array(), offset, array, 0, length);
         return new String(array);
     }
+    
     /**
      * returns a byte element from the array.
      * @param index index of the element

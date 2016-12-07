@@ -204,6 +204,18 @@ public class SchemaFactory {
         }
     }
     
+    public void initFromDirectory(String env,String directory){
+        this.schemaStore.clear();
+        this.schemaStoreGroups.clear();
+        String fullPath = FileUtils.getEnvironmentPath(env, directory);
+        if(fullPath!=null){
+            List<Schema> dirSchemas = this.readSchemaDirectory(fullPath);
+            for(Schema schema : dirSchemas){
+                this.addSchema(schema);
+            }
+        }
+    }
+    
     public List<Schema> readSchemaDirectory(String directory){
         List<String> fileList = FileUtils.getFileListInDir(directory, ".json");
         List<Schema> dirScemas = new ArrayList<Schema>();

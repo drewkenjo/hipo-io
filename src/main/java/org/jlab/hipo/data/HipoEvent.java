@@ -211,7 +211,9 @@ public class HipoEvent {
                 name = this.eventSchemaFactory.getSchema(entry.getKey()).getName();
             }
             Integer size = entry.getValue().getItemList().size();
-            table.addData(new String[]{counter.toString(), name, "5", entry.getKey().toString(),size.toString()});
+            HipoGroup group = this.getGroup(this.eventSchemaFactory.getSchema(entry.getKey()).getName());
+            Integer rows = group.getMaxSize();
+            table.addData(new String[]{counter.toString(), name, rows.toString(), entry.getKey().toString(),size.toString()});
             //System.out.println(String.format("|%24d | %-24s | %5d |", 
             //        entry.getKey(), name, entry.getValue().getItemList().size()));
             counter++;
@@ -219,6 +221,29 @@ public class HipoEvent {
         //System.out.println("+------------------------------------------------------------+");
         System.out.println(table.toString());
         
+    }
+        
+    public void showGroupByOrder(int order){
+        Integer counter = 0;
+        for(Map.Entry<Integer,GroupNodeIndexList>  entry : this.groupsIndex.entrySet()){
+            if(counter==order){
+                int id = entry.getValue().getGroup();
+                this.showGroup(id);
+            }
+            counter++;
+        }
+    }
+    
+    public void showGroup(int group){
+        Schema schema = getSchemaFactory().getSchema(group);
+        this.showGroup(schema.getName());
+    }
+    
+    public void showGroup(String group){
+        if(this.hasGroup(group)==true){
+            HipoGroup bank = this.getGroup(group);
+            bank.show();
+        }
     }
     
     public HipoNode getNode(int group, int item){
@@ -249,6 +274,14 @@ public class HipoEvent {
     
     public boolean hasGroup(int group){
         return this.groupsIndex.containsKey(group);
+    }
+    
+    public boolean hasGroup(String group){
+        if(this.eventSchemaFactory.hasSchema(group)==true){
+            int groupId = this.eventSchemaFactory.getSchema(group).getGroup();
+            return this.groupsIndex.containsKey(groupId);
+        }
+        return false;
     }
     
     public SchemaFactory  getSchemaFactory(){ return this.eventSchemaFactory;}
