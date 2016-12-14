@@ -1,11 +1,13 @@
 package org.jlab.hipo.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class FileUtils {
-
+    
     public static List<String>  getFileListInDir(String directory, String ext){
         List<String> files = FileUtils.getFileListInDir(directory);
         List<String> accepted = new ArrayList<String>();
@@ -13,6 +15,22 @@ public class FileUtils {
             if(file.endsWith(ext)==true) accepted.add(file);
         }
         return accepted;
+    }
+    
+    public static List<String>  readFile(String filename){
+        List<String> items = new ArrayList<String>();
+        try {
+            File file = new File(filename);
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNext()) {
+                //System.out.println(scanner.next());
+                items.add(scanner.next());
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        return items;
     }
     
     public static String getEnvironmentPath(String env, String dir){

@@ -192,6 +192,7 @@ public class SchemaFactory {
         if(desc.compareTo("float")==0) return HipoNodeType.FLOAT;
         if(desc.compareTo("double")==0) return HipoNodeType.DOUBLE;
         if(desc.compareTo("int64")==0) return HipoNodeType.LONG;
+        if(desc.compareTo("vector3f")==0) return HipoNodeType.VECTOR3F;
         return HipoNodeType.UNDEFINED;
     }
     

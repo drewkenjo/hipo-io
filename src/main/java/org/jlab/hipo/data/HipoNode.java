@@ -161,6 +161,13 @@ public class HipoNode {
                 str.append(String.format(" %8.3f", getFloat(i)));
             }
         }
+        
+        if(type==HipoNodeType.VECTOR3F){
+            int ndata = getDataSize();
+            for(int i = 0; i < ndata; i++){
+                str.append(String.format("(%.3f,%.3f,%.3f) ", getVectorX(i),getVectorY(i),getVectorZ(i)));
+            }
+        }
         return str.toString();
     }    
     /**
@@ -255,7 +262,53 @@ public class HipoNode {
     public short[] getDataShort(){
         
     }*/
-    
+    /**
+     * Get X component of the vector from the node with TYPE VECTOR3F
+     * @param index index of the vector
+     * @return X component
+     */
+    public float getVectorX(int index){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return (float) 0;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize());
+        return nodeBuffer.getFloat(offset);
+    }
+    /**
+     * Get Y component of the vector from the node with TYPE VECTOR3F
+     * @param index index of the vector
+     * @return Y component
+     */    
+    public float getVectorY(int index){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return (float) 0;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize()+4);
+        return nodeBuffer.getFloat(offset);
+    }
+    /**
+     * Get Z component of the vector from the node with TYPE VECTOR3F
+     * @param index index of the vector
+     * @return Z component
+     */    
+    public float getVectorZ(int index){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return (float) 0;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize()+8);
+        return nodeBuffer.getFloat(offset);
+    }
+    /**
+     * returns the value of the short array for given index.
+     * @param index index of the array
+     * @return the value
+     */
     public short getShort(int index){
         if(nodeType!=HipoNodeType.SHORT){
             printWrongTypeMessage(HipoNodeType.SHORT);
@@ -266,12 +319,27 @@ public class HipoNode {
     }
     
     public int getInt(int index){
-        if(nodeType!=HipoNodeType.INT){
+        if(nodeType!=HipoNodeType.BYTE&&nodeType!=HipoNodeType.SHORT&&
+                nodeType!=HipoNodeType.INT){
             printWrongTypeMessage(HipoNodeType.INT);
             return 0;
         }
+
         int offset = getOffset(index);
-        return nodeBuffer.getInt(offset);
+        
+        if(nodeType==HipoNodeType.INT){
+            return nodeBuffer.getInt(offset);
+        }
+        
+        if(nodeType==HipoNodeType.SHORT){
+            return (int) nodeBuffer.getShort(offset);
+        }
+        
+        if(nodeType==HipoNodeType.BYTE){
+            return (int) nodeBuffer.get(offset);
+        }
+        
+        return 0;        
     }
     
     public long getLong(int index){
@@ -296,7 +364,7 @@ public class HipoNode {
      * @param index element index
      * @param value byte value to set
      */
-    public void setByte(int index, byte value){
+    public void setByte(int index, byte value){                
         if(nodeType!=HipoNodeType.BYTE){
             printWrongTypeMessage(HipoNodeType.BYTE);
             return;
@@ -313,14 +381,53 @@ public class HipoNode {
         int offset = getOffset(index);
         nodeBuffer.putShort(offset, value);
     }        
-    
+    /**
+     * set integer value to the element of the node
+     * @param index order of the array
+     * @param value value to set
+     */
     public void setInt(int index, int value){
-        if(nodeType!=HipoNodeType.INT){
-            printWrongTypeMessage(HipoNodeType.INT);
+
+        if(nodeType==HipoNodeType.INT){
+            int offset = getOffset(index);
+            nodeBuffer.putInt(offset, value);
             return;
         }
-        int offset = getOffset(index);
-        nodeBuffer.putInt(offset, value);
+        
+        if(nodeType==HipoNodeType.SHORT){
+            if(value>Short.MIN_VALUE&&value<Short.MAX_VALUE){
+                short short_value = (short) value;
+                int offset = getOffset(index);
+                nodeBuffer.putShort(offset, short_value);
+                return;
+            } else {
+                System.out.println("[HipoNode::setInt] --> setting int value to short failed. Value is "
+                + " out of range. " + value);
+                return;
+            }
+        }
+        
+        if(nodeType==HipoNodeType.BYTE){
+            if(value>Byte.MIN_VALUE&&value<Byte.MAX_VALUE){
+                byte byte_value = (byte) value;
+                int offset = getOffset(index);
+                nodeBuffer.putShort(offset, byte_value);
+                return;
+            } else {
+                System.out.println("[HipoNode::setInt] --> setting int value to short failed. Value is "
+                + " out of range. " + value);
+                return;
+            }
+        }
+        
+        printWrongTypeMessage(HipoNodeType.INT);
+         
+        /*if(nodeType!=HipoNodeType.INT){
+            printWrongTypeMessage(HipoNodeType.INT);
+            return;
+        }*/
+        //int offset = getOffset(index);
+        //nodeBuffer.putInt(offset, value);
     } 
     
     public void setLong(int index, long value){
@@ -350,6 +457,58 @@ public class HipoNode {
         nodeBuffer.putDouble(offset, value);
     }
     /**
+     * sets all components for the vector with index
+     * @param index order of the vector
+     * @param x x-component of the vector
+     * @param y y-component of the vector
+     * @param z z-component of the vector
+     */
+    public void setVector(int index, float x, float y, float z){
+        setVectorX(index,x); setVectorY(index,y); setVectorZ(index,z);        
+    }
+    /**
+     * sets X component of the vector with index
+     * @param index index of the vector
+     * @param value X component value to set
+     */
+    public void setVectorX(int index, float value){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize());
+        nodeBuffer.putFloat(offset,value);
+    }
+   /**
+     * sets X component of the vector with index
+     * @param index index of the vector
+     * @param value X component value to set
+     */
+    public void setVectorY(int index, float value){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize()+4);
+        nodeBuffer.putFloat(offset,value);
+    }
+   /**
+     * sets X component of the vector with index
+     * @param index index of the vector
+     * @param value X component value to set
+     */
+    public void setVectorZ(int index, float value){
+        if(nodeType!=HipoNodeType.VECTOR3F){
+            printWrongTypeMessage(HipoNodeType.VECTOR3F);
+            return;
+        }
+        int start  = getOffset(0);
+        int offset = start + (index*nodeType.getSize()+8);
+        nodeBuffer.putFloat(offset,value);
+    }    
+    /**
      * prints error message when wrong type is selected for the node.
      * @param type mistaken type
      */
@@ -363,8 +522,7 @@ public class HipoNode {
      * @param args 
      */
     public static void main(String[] args){
-        
-        
+        /*
         HipoNode node = new HipoNode(1200,1,HipoNodeType.SHORT,5);
         
         for(int i = 0; i < 5; i++) { node.setShort(i, (short) ((i+1)*2) );}
@@ -377,6 +535,21 @@ public class HipoNode {
         HipoNode nodeString = new HipoNode(20,1,"Histogram");
         
         System.out.println("VALUE = [" + nodeString.getString() + "]");
+        */
+        /*
+        HipoNode node = new HipoNode(300,1,HipoNodeType.VECTOR3F,8);
+        for(int i = 0; i < node.getDataSize(); i++){
+            node.setVector(i, (float) Math.random(),(float) Math.random(), (float) Math.random());            
+        }
+        System.out.println("DATA SIZE = " + node.getDataSize());
+        System.out.println(node.getDataString());
+        */
         
+        HipoNode node = new HipoNode(300,1,HipoNodeType.SHORT,20);
+        for(int i = 0; i < 20; i++){
+            int value = (i+1)*2700;
+            node.setInt(i, value);
+        }
+        System.out.println(node.getDataString());
     }
 }

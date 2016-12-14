@@ -21,7 +21,8 @@ public enum HipoNodeType {
     DOUBLE    ( 5, 8, "DOUBLE"),
     STRING    ( 6, 1, "STRING"),
     GROUP     ( 7, 0, "GROUP"),
-    LONG      ( 8, 8, "LONG");
+    LONG      ( 8, 8, "LONG"),
+    VECTOR3F  ( 9, 12, "VECTOR3F");
     
     private final int typeid;
     private final int sizeOf;

@@ -84,6 +84,10 @@ public class Schema {
         return this.idEntries.get(id);
     }
     
+    protected Map<Integer,SchemaEntry> schemaEntries(){
+        return this.idEntries;
+    }
+    
     public final void   setName(String n){name = n;}
     public final void   setGroup(int grp){group = grp;}
     public final String getName(){return name;}
@@ -118,6 +122,14 @@ public class Schema {
         }
         HipoGroup hipogroup = new HipoGroup(nodes,this);
         return hipogroup;
+    }
+    
+    public void copy(Schema schema){
+        this.nameEntries.clear();
+        this.idEntries.clear();
+        for(Map.Entry<Integer,SchemaEntry> entry : schema.schemaEntries().entrySet()){
+            this.addEntry(entry.getValue().copy());
+        }
     }
     
     @Override
@@ -155,6 +167,10 @@ public class Schema {
           name = n;
           id = i;
           type = t;
+        }
+        
+        public SchemaEntry copy(){
+            return new SchemaEntry(name,id,type);
         }
         
         public void setName(String n) {name = n;}
