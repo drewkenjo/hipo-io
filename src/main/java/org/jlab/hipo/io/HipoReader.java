@@ -233,6 +233,14 @@ public class HipoReader {
         }
     }
     
+    public void close(){
+        try {
+            this.inputStream.close();
+        } catch (IOException ex) {
+            Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     private int  getRecordByEvent(int event){
         int nevents = 0;
         int icount  = 0;
