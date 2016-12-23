@@ -1,0 +1,25 @@
+#=================================================
+# The SCONSTRUCT file for building HIPO project.
+# 
+#=================================================
+import glob
+import os
+import sys
+#=================================================
+# LOADING THE ENVIRONMENT
+#=================================================
+env = Environment(CPPPATH=["include"])
+env.Append(ENV = os.environ)
+env.Append(CPPPATH=["src/root","src/evio"])
+env.Append(CCFLAGS=["-O2","-fPIC","-m64","-fmessage-length=0","-g"])
+#=================================================
+# Check for compression libraries.
+#=================================================
+
+#=================================================
+# 
+#=================================================
+
+codeList_C = glob.glob('libc/*.c')
+
+env.Program(target="bin/hipo-utils",source = codeList_C)
