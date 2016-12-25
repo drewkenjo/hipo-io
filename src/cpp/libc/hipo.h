@@ -1,2 +1,2 @@
 
-bool open_hipo_File(char* filename);
+bool open_hipo_File(const char* filename);

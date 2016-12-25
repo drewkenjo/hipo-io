@@ -22,7 +22,13 @@ if conf.CheckLib('liblz4'):
    print '\n\033[32m[**] >>>>> found library : LZ4'
    print '[**] >>>>> enabling lz4 compression. \033[0m'
    print ''
-   env.Append(CCFLAGS="-D__LZ4__")    
+   env.Append(CCFLAGS="-D__LZ4__")
+    
+if conf.CheckLib('libz'):
+   print '\n\033[32m[**] >>>>> found library : libz'
+   print '[**] >>>>> enabling gzip compression. \033[0m'
+   print ''
+   env.Append(CCFLAGS="-D__LIBZ__")
 #=================================================
 # 
 #=================================================

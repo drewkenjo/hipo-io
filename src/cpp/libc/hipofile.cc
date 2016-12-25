@@ -5,7 +5,7 @@
 
 using namespace std;
 
-bool open_hipo_File(char* filename){ 
+bool open_hipo_File(const char* filename){ 
   printf("\x1b[32m \n----> hellow hipo file.\n \x1b[0m\n");
   ifstream infile;
   infile.open(filename,ios::binary|ios::in);
