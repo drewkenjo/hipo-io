@@ -1,0 +1,40 @@
+#=================================================
+# The SCONSTRUCT file for building HIPO project.
+# 
+#=================================================
+import glob
+import os
+import sys
+#=================================================
+# LOADING THE ENVIRONMENT
+#=================================================
+env = Environment(CPPPATH=["include","libc"])
+env.Append(ENV = os.environ)
+env.Append(CPPPATH=["src/root","src/evio"])
+env.Append(CCFLAGS=["-O2","-fPIC","-m64","-fmessage-length=0","-g"])
+env.Append(LIBPATH=["/opt/local/lib","/usr/lib","lib"])
+#=================================================
+# Check for compression libraries.
+#=================================================
+conf = Configure(env)
+
+if conf.CheckLib('liblz4'):
+   print '\n\033[32m[**] >>>>> found library : LZ4'
+   print '[**] >>>>> enabling lz4 compression. \033[0m'
+   print ''
+   env.Append(CCFLAGS="-D__LZ4__")
+    
+if conf.CheckLib('libz'):
+   print '\n\033[32m[**] >>>>> found library : libz'
+   print '[**] >>>>> enabling gzip compression. \033[0m'
+   print ''
+   env.Append(CCFLAGS="-D__LIBZ__")
+#=================================================
+# 
+#=================================================
+
+codeList_CPP  = glob.glob('libc/*.cc')
+codeList_TEST = glob.glob('tests/*.cc')
+
+env.Library(target="lib/libhipo.a",source = codeList_CPP)
+env.Program(target="bin/hipo-utils",source = codeList_CPP + codeList_TEST)
