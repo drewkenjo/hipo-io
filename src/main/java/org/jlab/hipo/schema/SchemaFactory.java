@@ -68,6 +68,13 @@ public class SchemaFactory {
         return this.schemaStore.get(name);
     }
     
+    public List<Schema>  getSchemaList(){
+        List<Schema> schemas = new ArrayList<Schema>();
+        for(Map.Entry<String,Schema> entry : this.schemaStore.entrySet()){
+            schemas.add(entry.getValue());
+        }
+        return schemas;
+    }
     
     public Schema getSchema(int group){
         return this.schemaStoreGroups.get(group);

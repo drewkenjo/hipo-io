@@ -5,7 +5,9 @@
  */
 package org.jlab.hipo.schema;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.jlab.hipo.data.HipoGroup;
@@ -23,8 +25,8 @@ public class Schema {
     private Integer group = 1;
     private String  name  = "default";
     
-    private Map<Integer,SchemaEntry>    idEntries = new HashMap<Integer,SchemaEntry>();
-    private Map<String,SchemaEntry>   nameEntries = new HashMap<String,SchemaEntry>();
+    private Map<Integer,SchemaEntry>    idEntries = new LinkedHashMap<Integer,SchemaEntry>();
+    private Map<String,SchemaEntry>   nameEntries = new LinkedHashMap<String,SchemaEntry>();
     
     public Schema(){
         
@@ -88,6 +90,13 @@ public class Schema {
         return this.idEntries;
     }
     
+    public List<String> schemaEntryList(){
+        List<String> entryList = new ArrayList<String>();
+        for(Map.Entry<String,SchemaEntry> entry : this.nameEntries.entrySet()){
+            entryList.add(entry.getKey());
+        }
+        return entryList;
+    }
     public final void   setName(String n){name = n;}
     public final void   setGroup(int grp){group = grp;}
     public final String getName(){return name;}
@@ -130,6 +139,7 @@ public class Schema {
         for(Map.Entry<Integer,SchemaEntry> entry : schema.schemaEntries().entrySet()){
             this.addEntry(entry.getValue().copy());
         }
+        this.setName(schema.getName());
     }
     
     @Override
