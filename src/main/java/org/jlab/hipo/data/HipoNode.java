@@ -231,6 +231,12 @@ public class HipoNode {
         int offset = getOffset(index);
         return nodeBuffer.get(offset);
     }
+    
+    public byte[] getByte(){
+        byte[] array = new byte[this.getDataSize()];
+        System.arraycopy(this.nodeBuffer.array(), headerLength, array, 0, array.length);
+        return array;
+    }
     /**
      * returns a float array containing the data from the node.
      * needs to be optimized with ArrayCopy !
@@ -243,6 +249,20 @@ public class HipoNode {
         }
         float[] result = new float[this.getDataSize()];
         for(int i = 0; i < result.length; i++) result[i] = getFloat(i);
+        return result;
+    }
+    /**
+     * returns a float array containing the data from the node.
+     * needs to be optimized with ArrayCopy !
+     * @return float[] array of the node.
+     */
+    public double[] getDouble(){
+        if(nodeType!=HipoNodeType.DOUBLE){
+            printWrongTypeMessage(HipoNodeType.DOUBLE);
+            return new double[0];
+        }
+        double[] result = new double[this.getDataSize()];
+        for(int i = 0; i < result.length; i++) result[i] = getDouble(i);
         return result;
     }
     /**
@@ -340,6 +360,32 @@ public class HipoNode {
         }
         
         return 0;        
+    }
+    
+    public int[] getInt(){
+        if(this.nodeType!=HipoNodeType.INT){
+            this.printWrongTypeMessage(HipoNodeType.INT);
+            return new int[0];
+        }
+
+        int[] array = new int[this.getDataSize()];
+        for(int i = 0; i < array.length; i++) array[i] = this.getInt(i);
+        //System.arraycopy(this.nodeBuffer.array(), headerLength, array, 0, array.length*4);
+        return array;
+    }
+    
+    public short[] getShort(){
+        if(this.nodeType!=HipoNodeType.SHORT){
+            this.printWrongTypeMessage(HipoNodeType.SHORT);
+            return new short[0];
+        }
+        
+        short[] array = new short[this.getDataSize()];
+        for(int i = 0; i < array.length; i++) array[i] = this.getShort(i);
+        /*System.out.println(" copying " + headerLength +  "  " + (array.length*2) +
+                "   " + this.nodeBuffer.array().length);
+        System.arraycopy(this.nodeBuffer.array(), headerLength, array, 0, array.length);*/
+        return array;
     }
     
     public long getLong(int index){
@@ -547,9 +593,25 @@ public class HipoNode {
         
         HipoNode node = new HipoNode(300,1,HipoNodeType.SHORT,20);
         for(int i = 0; i < 20; i++){
-            int value = (i+1)*2700;
+            int value = (i+1)*20;
             node.setInt(i, value);
         }
+
         System.out.println(node.getDataString());
+        
+        short[] buff = node.getShort();
+        for(int i = 0; i < buff.length ; i++){
+            System.out.println( i + " = " + buff[i]);
+        }
+
+        HipoNode nodeB = new HipoNode(300,1,HipoNodeType.BYTE,20);
+        for(int i = 0; i < 20; i++){
+            int value = (i+1)*2;
+            nodeB.setByte(i, (byte) value);
+        }
+        byte[] buffb = nodeB.getByte();
+        for(int i = 0; i < buffb.length ; i++){
+            System.out.println( i + " = " + buffb[i]);
+        }
     }
 }
