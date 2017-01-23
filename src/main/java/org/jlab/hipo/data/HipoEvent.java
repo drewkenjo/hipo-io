@@ -335,8 +335,8 @@ public class HipoEvent {
         public void addNodeIndex(NodeIndexList indx){
             //System.out.println("----------> adding " + indx.nodeItem);
             if(nodesIndex.containsKey(indx.nodeItem)==true){
-                System.out.println("[GroupNodeIndexList] --> error : group = "
-                        + groupid + "  already has an item with id="+indx.nodeItem);
+                //System.out.println("[GroupNodeIndexList] --> error : group = "
+                //        + groupid + "  already has an item with id="+indx.nodeItem);
                 return;
             }
             nodesIndex.put(indx.nodeItem, indx);

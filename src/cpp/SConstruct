@@ -8,7 +8,7 @@ import sys
 #=================================================
 # LOADING THE ENVIRONMENT
 #=================================================
-env = Environment(CPPPATH=["include","libc"])
+env = Environment(CPPPATH=["include","libc","/usr/include","/usr/local/include","/opt/local/include"])
 env.Append(ENV = os.environ)
 env.Append(CPPPATH=["src/root","src/evio"])
 env.Append(CCFLAGS=["-O2","-fPIC","-m64","-fmessage-length=0","-g"])
