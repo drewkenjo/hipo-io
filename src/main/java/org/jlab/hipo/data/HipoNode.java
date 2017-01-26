@@ -154,11 +154,23 @@ public class HipoNode {
                 str.append(String.format(" %8d", getInt(i)));
             }
         }
-        
+        if(type==HipoNodeType.LONG){
+            int ndata = getDataSize();
+            for(int i = 0; i < ndata; i++){
+                str.append(String.format(" %8d", getLong(i)));
+            }
+        }
         if(type==HipoNodeType.FLOAT){
             int ndata = getDataSize();
             for(int i = 0; i < ndata; i++){
                 str.append(String.format(" %8.3f", getFloat(i)));
+            }
+        }
+        
+        if(type==HipoNodeType.DOUBLE){
+            int ndata = getDataSize();
+            for(int i = 0; i < ndata; i++){
+                str.append(String.format(" %8.3f", getDouble(i)));
             }
         }
         
