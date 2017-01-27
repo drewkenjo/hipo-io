@@ -202,8 +202,10 @@ public class HipoEvent {
     }
     
     public void show(){
-        TextTable table = new TextTable("id:name:entries:group:items","4:24:12:9:9");
+        TextTable table = new TextTable("id:name:entries:group:items","4:36:12:9:9");
         //System.out.println("+------------------------------------------------------------+");
+        List<Integer>  failedGroups = new ArrayList<Integer>();
+        
         Integer counter = 0;
         for(Map.Entry<Integer,GroupNodeIndexList>  entry : this.groupsIndex.entrySet()){
             String name = "N/A";
@@ -211,16 +213,26 @@ public class HipoEvent {
                 name = this.eventSchemaFactory.getSchema(entry.getKey()).getName();
             }
             Integer size = entry.getValue().getItemList().size();
-            HipoGroup group = this.getGroup(this.eventSchemaFactory.getSchema(entry.getKey()).getName());
-            Integer rows = group.getMaxSize();
-            table.addData(new String[]{counter.toString(), name, rows.toString(), entry.getKey().toString(),size.toString()});
+            try {
+                HipoGroup group = this.getGroup(this.eventSchemaFactory.getSchema(entry.getKey()).getName());
+                Integer rows = group.getMaxSize();
+                table.addData(new String[]{counter.toString(), name, rows.toString(), entry.getKey().toString(),size.toString()});
+            } catch (Exception e) {
+                failedGroups.add(entry.getKey());
+            }
             //System.out.println(String.format("|%24d | %-24s | %5d |", 
             //        entry.getKey(), name, entry.getValue().getItemList().size()));
             counter++;
         }
         //System.out.println("+------------------------------------------------------------+");
         System.out.println(table.toString());
-        
+        if(failedGroups.size()>0){
+            System.out.println("\n\n ERROR printing GROUP IS's : ");
+            for(Integer item : failedGroups){
+                System.out.println( item + " ");
+            }
+            System.out.println("\n\n");
+        }
     }
         
     public void showGroupByOrder(int order){
