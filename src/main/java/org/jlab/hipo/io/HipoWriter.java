@@ -74,6 +74,9 @@ public class HipoWriter {
     public HipoWriter(){
         this.outputRecord = new HipoRecord(); 
         this.headerRecord = new HipoRecord();
+        if(System.getenv("CLAS12DIR")!=null){
+            this.schemaFactory.initFromDirectory("CLAS12DIR", "etc/bankdefs/hipo");
+        }
     }        
     /**
      * creates new Writer with an empty record store and associates with 
@@ -82,6 +85,9 @@ public class HipoWriter {
      */
     public HipoWriter(String file){
         this.outputRecord = new HipoRecord();
+        if(System.getenv("CLAS12DIR")!=null){
+            this.schemaFactory.initFromDirectory("CLAS12DIR", "etc/bankdefs/hipo");
+        }
         this.open(file);
     }
     /**
