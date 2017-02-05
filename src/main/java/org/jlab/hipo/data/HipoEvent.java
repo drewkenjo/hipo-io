@@ -175,6 +175,7 @@ public class HipoEvent {
     public HipoGroup getGroup(String name){
         if(this.eventSchemaFactory.hasSchema(name)==true){
             Schema schema = this.eventSchemaFactory.getSchema(name);
+            if(this.hasGroup(schema.getGroup())==false) return null;
             Map<Integer,HipoNode> nodes = getGroup(schema.getGroup());
             return new HipoGroup(nodes,schema);
         }
