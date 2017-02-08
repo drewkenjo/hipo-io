@@ -35,7 +35,7 @@ public class HipoReader {
     //List<HipoRecordIndex>  inRecords        = new ArrayList<HipoRecordIndex>();
     List<HipoRecordIndex>  corruptedRecords = new ArrayList<HipoRecordIndex>();
     
-    int                     debugMode = 10;
+    int                     debugMode = 0;
     List<HipoRecordHeader>  readerRecords = new ArrayList<HipoRecordHeader>();
     
     private final SchemaFactory  schemaFactory = new SchemaFactory();
@@ -75,7 +75,9 @@ public class HipoReader {
             byte[]  fileHeader   = new byte[HipoFileHeader.FILE_HEADER_LENGTH];
             stream.read(fileHeader);
             HipoFileHeader header = new HipoFileHeader(fileHeader);
-            System.out.println(header.toString());
+            if(this.debugMode>0){
+                System.out.println(header.toString());
+            }
         } catch (IOException ex) {
             Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -227,9 +229,11 @@ public class HipoReader {
         this.numberOfEventsInFile = 0;
         
         System.out.println("Number of records recovered = " + readerRecords.size());
-        for(HipoRecordHeader ri : this.readerRecords){
-            System.out.println(ri.toString());
-            this.numberOfEventsInFile += ri.getNumberOfEvents();
+        if(this.debugMode>4){
+            for(HipoRecordHeader ri : this.readerRecords){
+                System.out.println(ri.toString());
+                this.numberOfEventsInFile += ri.getNumberOfEvents();
+            }
         }
     }
     
