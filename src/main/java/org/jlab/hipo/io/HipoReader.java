@@ -229,12 +229,12 @@ public class HipoReader {
         this.numberOfEventsInFile = 0;
         
         System.out.println("Number of records recovered = " + readerRecords.size());
-        if(this.debugMode>4){
-            for(HipoRecordHeader ri : this.readerRecords){
-                System.out.println(ri.toString());
-                this.numberOfEventsInFile += ri.getNumberOfEvents();
-            }
+
+        for(HipoRecordHeader ri : this.readerRecords){
+            if(this.debugMode>4) System.out.println(ri.toString());
+            this.numberOfEventsInFile += ri.getNumberOfEvents();
         }
+            
     }
     
     public void close(){
