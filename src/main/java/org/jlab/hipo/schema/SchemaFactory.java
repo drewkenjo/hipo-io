@@ -183,11 +183,14 @@ public class SchemaFactory {
         }
     }
     
+    
     public HipoEvent getFilteredEvent(HipoEvent event){
         HipoEvent filtered = new HipoEvent(this);
         for(String bank : this.schemaFilter){
-            HipoGroup group = event.getGroup(bank);
-            filtered.addNodes(group.getNodes());
+            if(event.hasGroup(bank)==true){
+                HipoGroup group = event.getGroup(bank);
+                filtered.addNodes(group.getNodes());
+            }
         }
         return filtered;
     }
