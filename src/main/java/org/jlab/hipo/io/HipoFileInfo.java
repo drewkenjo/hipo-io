@@ -30,6 +30,14 @@ public class HipoFileInfo {
         this.fileRecords.add(header);
     }
     
+    public void clear(){
+        this.fileRecords.clear();
+        this.currentEvent =0;
+        this.currentRecord = 0;
+        this.currentRecordFirstEvent =0;
+        this.currentRecordLastEvent =0;
+    }
+    
     public void reset(){
         currentEvent  = 0;
         currentRecord = 0;

@@ -92,6 +92,7 @@ public class HipoReader {
         if(this.debugMode>0) System.out.println("[bio-reader] ---> openning file : " + name);
         try {
             this.inputStream = new FileInputStream(new File(name));
+            this.fileInfo.clear();
             this.readRecordIndex(readerRecords);
             //System.out.println(" HEADER RECORD = " + this.headerRecord.getEventCount());
             this.initSchemaFactory();
