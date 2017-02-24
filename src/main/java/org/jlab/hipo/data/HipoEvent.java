@@ -53,6 +53,7 @@ public class HipoEvent {
         eventBuffer = ByteBuffer.wrap(header);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
         eventSchemaFactory.copy(factory);
+        this.updateNodeIndex();
     }
     
     /**

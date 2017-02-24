@@ -273,7 +273,7 @@ public class HipoReader {
     
     public HipoEvent readHipoEvent(int pos){
         byte[] buffer = this.readEvent(pos);
-        if(buffer==null) return null;
+        if(buffer==null) return new HipoEvent(this.schemaFactory);
         HipoEvent  event = new HipoEvent(buffer,this.schemaFactory);
         return event;
     }
