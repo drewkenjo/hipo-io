@@ -52,7 +52,9 @@ public class HipoReader {
      * Keeping track of the events in the file
      */
     
-    private int  readerCurrentRecord       = 0;
+    private HipoFileInfo  fileInfo = new HipoFileInfo();
+    
+    private int  readerCurrentRecord       = -1;
     private int  readerCurrentRecordLength = 0;
     private int  readerCurrentEvent        = 0;
     private int  numberOfEventsInFile      = 0;
@@ -75,9 +77,7 @@ public class HipoReader {
             byte[]  fileHeader   = new byte[HipoFileHeader.FILE_HEADER_LENGTH];
             stream.read(fileHeader);
             HipoFileHeader header = new HipoFileHeader(fileHeader);
-            if(this.debugMode>0){
-                System.out.println(header.toString());
-            }
+            System.out.println(header.toString());
         } catch (IOException ex) {
             Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -95,6 +95,7 @@ public class HipoReader {
             this.readRecordIndex(readerRecords);
             //System.out.println(" HEADER RECORD = " + this.headerRecord.getEventCount());
             this.initSchemaFactory();
+            this.fileInfo.reset();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(HipoReader.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -191,6 +192,7 @@ public class HipoReader {
                     if(record.isValid()==true){
                         record.setPositionInFile(firstRecordOffset);
                         this.readerRecords.add(record);
+                        this.fileInfo.addRecord(record);
                         //System.out.println(record.toString());
                         //System.out.println(" found record valid at position " + firstRecordOffset);
                         firstRecordOffset += record.getRecordSize();
@@ -229,12 +231,10 @@ public class HipoReader {
         this.numberOfEventsInFile = 0;
         
         System.out.println("Number of records recovered = " + readerRecords.size());
-
         for(HipoRecordHeader ri : this.readerRecords){
-            if(this.debugMode>4) System.out.println(ri.toString());
+            if(this.debugMode>0) System.out.println(ri.toString());
             this.numberOfEventsInFile += ri.getNumberOfEvents();
         }
-            
     }
     
     public void close(){
@@ -273,13 +273,39 @@ public class HipoReader {
     
     public HipoEvent readHipoEvent(int pos){
         byte[] buffer = this.readEvent(pos);
+        if(buffer==null) return null;
         HipoEvent  event = new HipoEvent(buffer,this.schemaFactory);
         return event;
     }
     
+    public HipoFileInfo  getFileInfo(){
+        return this.fileInfo;
+    }
     public byte[] readEvent(int pos){
-        
-        int nrecord = getRecordByEvent(pos);
+        byte[]  eventBytes = null;
+        int eventRecord = 0;
+        int eventOffset = 0;
+        try {
+            this.fileInfo.setEvent(pos);
+            
+            eventRecord = this.fileInfo.getRecord();
+            eventOffset = this.fileInfo.getEventOffset();
+            //System.out.println(" set event -> " + pos + " " + this.readerCurrentRecord
+            //+ " record = " + eventRecord + " offset = " + eventOffset);        
+            if(eventRecord!=this.readerCurrentRecord){
+                this.readerRecord = this.readRecord(eventRecord);
+                this.readerCurrentRecord = eventRecord;
+                //System.out.println(" RECORD READ SIZE = " + this.readerRecord.getEventCount());
+            }
+            eventBytes = this.readerRecord.getEvent(eventOffset);
+        } catch (Exception e){
+            System.out.println(" ERROR READING ENTRY :  " + eventOffset + " FROM RECORD : "
+            + eventRecord);
+            return null;    
+        }
+        return eventBytes;
+            /*
+            int nrecord = getRecordByEvent(pos);
         if(nrecord!=this.readerCurrentRecord){
             this.readerRecord = this.readRecord(nrecord);
             this.readerCurrentRecord = nrecord;
@@ -292,7 +318,7 @@ public class HipoReader {
         int nevoffset = this.getEventOffsetInRecord(pos);
         
         byte[]  eventBytes = this.readerRecord.getEvent(nevoffset);
-        return eventBytes;
+        return eventBytes;*/
     }
     
     public int  getEventCount(){

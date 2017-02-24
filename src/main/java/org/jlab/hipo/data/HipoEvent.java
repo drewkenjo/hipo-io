@@ -29,7 +29,7 @@ public class HipoEvent {
     Map<Integer,GroupNodeIndexList>  groupsIndex = new LinkedHashMap<Integer,GroupNodeIndexList>();
     
     
-    private final SchemaFactory    eventSchemaFactory = new SchemaFactory();
+    private SchemaFactory    eventSchemaFactory = new SchemaFactory();
         
     
     public HipoEvent(){
@@ -69,7 +69,8 @@ public class HipoEvent {
         eventBuffer = ByteBuffer.wrap(buffer);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
         updateNodeIndex();
-        eventSchemaFactory.copy(factory);
+        //eventSchemaFactory.copy(factory);
+        this.eventSchemaFactory = factory;
     }
     /**
      * Add a single node to the event.
@@ -175,7 +176,6 @@ public class HipoEvent {
     public HipoGroup getGroup(String name){
         if(this.eventSchemaFactory.hasSchema(name)==true){
             Schema schema = this.eventSchemaFactory.getSchema(name);
-            if(this.hasGroup(schema.getGroup())==false) return null;
             Map<Integer,HipoNode> nodes = getGroup(schema.getGroup());
             return new HipoGroup(nodes,schema);
         }
@@ -203,10 +203,8 @@ public class HipoEvent {
     }
     
     public void show(){
-        TextTable table = new TextTable("id:name:entries:group:items","4:36:12:9:9");
+        TextTable table = new TextTable("id:name:entries:group:items","4:24:12:9:9");
         //System.out.println("+------------------------------------------------------------+");
-        List<Integer>  failedGroups = new ArrayList<Integer>();
-        
         Integer counter = 0;
         for(Map.Entry<Integer,GroupNodeIndexList>  entry : this.groupsIndex.entrySet()){
             String name = "N/A";
@@ -214,26 +212,16 @@ public class HipoEvent {
                 name = this.eventSchemaFactory.getSchema(entry.getKey()).getName();
             }
             Integer size = entry.getValue().getItemList().size();
-            try {
-                HipoGroup group = this.getGroup(this.eventSchemaFactory.getSchema(entry.getKey()).getName());
-                Integer rows = group.getMaxSize();
-                table.addData(new String[]{counter.toString(), name, rows.toString(), entry.getKey().toString(),size.toString()});
-            } catch (Exception e) {
-                failedGroups.add(entry.getKey());
-            }
+            HipoGroup group = this.getGroup(this.eventSchemaFactory.getSchema(entry.getKey()).getName());
+            Integer rows = group.getMaxSize();
+            table.addData(new String[]{counter.toString(), name, rows.toString(), entry.getKey().toString(),size.toString()});
             //System.out.println(String.format("|%24d | %-24s | %5d |", 
             //        entry.getKey(), name, entry.getValue().getItemList().size()));
             counter++;
         }
         //System.out.println("+------------------------------------------------------------+");
         System.out.println(table.toString());
-        if(failedGroups.size()>0){
-            System.out.println("\n\n ERROR printing GROUP IS's : ");
-            for(Integer item : failedGroups){
-                System.out.println( item + " ");
-            }
-            System.out.println("\n\n");
-        }
+        
     }
         
     public void showGroupByOrder(int order){
@@ -348,8 +336,8 @@ public class HipoEvent {
         public void addNodeIndex(NodeIndexList indx){
             //System.out.println("----------> adding " + indx.nodeItem);
             if(nodesIndex.containsKey(indx.nodeItem)==true){
-                //System.out.println("[GroupNodeIndexList] --> error : group = "
-                //        + groupid + "  already has an item with id="+indx.nodeItem);
+                System.out.println("[GroupNodeIndexList] --> error : group = "
+                        + groupid + "  already has an item with id="+indx.nodeItem);
                 return;
             }
             nodesIndex.put(indx.nodeItem, indx);
