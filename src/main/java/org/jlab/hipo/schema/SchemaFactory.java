@@ -293,6 +293,11 @@ public class SchemaFactory {
     
     public static void main(String[] args){
         SchemaFactory factory = new SchemaFactory();
+        factory.initFromDirectory("CLAS12DIR","etc/bankdefs/hipo");
+//.readSchemaDirectory("/Users/gavalian/Work/Software/Release-4a.0.0/COATJAVA/coatjava/etc/bankdefs/hipo");
+        factory.show();
+        /*
+        SchemaFactory factory = new SchemaFactory();
         factory.addSchema(new Schema("{1302,FTOF::dgtz}[1,px,FLOAT][2,py,FLOAT][3,pz,FLOAT]"));
         factory.addSchema(new Schema("{1304,DC::dgtz}[1,px,FLOAT][2,py,FLOAT][3,pz,FLOAT]"));
         factory.addSchema(new Schema("{1306,ECAL::dgtz}[1,px,FLOAT][2,py,FLOAT][3,pz,FLOAT]"));
@@ -305,6 +310,6 @@ public class SchemaFactory {
         SchemaFactory ff = new SchemaFactory();
         
         ff.setFromEvent(event);
-        ff.show();
+        ff.show();*/
     }
 }

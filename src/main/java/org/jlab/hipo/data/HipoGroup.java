@@ -86,6 +86,7 @@ public class HipoGroup {
     }
     
     public Schema getSchema(){ return this.groupSchema;}
+    
     public void show(){
         System.out.println("------------------------+---------------------------+");
         System.out.println(String.format(">>>> GROUP (group=%6d) (name=%s):", this.groupSchema.getGroup(),this.groupSchema.getName()));

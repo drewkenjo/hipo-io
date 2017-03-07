@@ -26,7 +26,7 @@ public class HipoEvent {
     ByteBuffer           eventBuffer = null;
     
     List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();    
-    Map<Integer,GroupNodeIndexList>  groupsIndex = new LinkedHashMap<Integer,GroupNodeIndexList>();
+    Map<Integer,GroupNodeIndexList>  groupsIndex = new HashMap<Integer,GroupNodeIndexList>();
     
     
     private SchemaFactory    eventSchemaFactory = new SchemaFactory();
@@ -65,7 +65,7 @@ public class HipoEvent {
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
         updateNodeIndex();
     }
-    
+        
     public HipoEvent(byte[] buffer, SchemaFactory factory){        
         eventBuffer = ByteBuffer.wrap(buffer);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
@@ -161,13 +161,29 @@ public class HipoEvent {
         }
     }
     
+    
+    public void reset(){
+        byte[] header = new byte[8];
+        header[0] = 'E';
+        header[1] = 'V';
+        header[2] = 'N';
+        header[3] = 'T';
+        
+        eventBuffer = ByteBuffer.wrap(header);
+        eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
+    }
     /**
      * writes all the nodes in the group into the event.
      * @param group group containing nodes
      */
     public void writeGroup(HipoGroup group){
-        List<HipoNode> nodes = group.getNodes();
-        this.addNodes(nodes);
+        if(this.hasGroup(group.getSchema().getGroup())==true){
+            System.out.println("[HipoEvent] warning : groups is not added. The event contains group id = " 
+            + group.getSchema().getGroup() + " name = " + group.getSchema().getName());
+        } else {
+            List<HipoNode> nodes = group.getNodes();
+            this.addNodes(nodes);
+        }
     }
     /**
      * returns a group of nodes for given Schema.
@@ -287,6 +303,43 @@ public class HipoEvent {
     }
     
     public SchemaFactory  getSchemaFactory(){ return this.eventSchemaFactory;}
+    
+    public List<HipoGroup>  getGroups(){
+        List<HipoGroup> groups = new ArrayList<HipoGroup>();
+        for(Map.Entry<Integer,GroupNodeIndexList> entry : this.groupsIndex.entrySet()){
+            Map<Integer,HipoNode> nodes = this.getGroup(entry.getKey());
+            Schema               schema = this.getSchemaFactory().getSchema(entry.getKey());
+            if(schema!=null){
+                groups.add(new HipoGroup(nodes,schema));
+            } else {
+                groups.add(new HipoGroup(nodes));
+            }
+        }
+        return groups;
+    }
+    /**
+     * Removes given group with given group id from the event
+     * @param group 
+     */
+    public void removeGroup(int group){
+        List<HipoGroup> groups = getGroups();
+        reset();
+        for(HipoGroup entry : groups){
+            if(entry.getSchema().getGroup()!=group){
+                this.writeGroup(entry);
+            }
+        }
+    }
+    /**
+     * removes group with given name from the event
+     * @param name 
+     */
+    public void removeGroup(String name){
+        Schema schema = this.eventSchemaFactory.getSchema(name);
+        if(schema!=null){
+            this.removeGroup(schema.getGroup());
+        }
+    }
     
     public Map<Integer,HipoNode>  getGroup(int group){
         Map<Integer,HipoNode> groupNodes = new LinkedHashMap<Integer,HipoNode>();
@@ -413,6 +466,7 @@ public class HipoEvent {
     }
     
     public static void main(String[] args){
+        
         HipoNode node = new HipoNode(1200,25,HipoNodeType.SHORT,5);
         for(int i = 0; i < 5; i++) { node.setShort(i, (short) ((i+1)*2) );}
         System.out.println(node.getHeaderString() + " : " + node.getDataString());
@@ -423,6 +477,9 @@ public class HipoEvent {
         List<HipoNode>  nodes = new ArrayList<HipoNode>();
         nodes.add(nodeF);
         nodes.add(node);
+        
+        
+        //nodes.add(node);
         HipoEvent event = new HipoEvent();
         event.addNodes(nodes);
         //event.addNode(node);
