@@ -322,6 +322,7 @@ public class HipoEvent {
      * @param group 
      */
     public void removeGroup(int group){
+        if(this.hasGroup(group)==false) return;
         List<HipoGroup> groups = getGroups();
         reset();
         for(HipoGroup entry : groups){
@@ -335,6 +336,7 @@ public class HipoEvent {
      * @param name 
      */
     public void removeGroup(String name){
+        if(this.hasGroup(name)==false) return;
         Schema schema = this.eventSchemaFactory.getSchema(name);
         if(schema!=null){
             this.removeGroup(schema.getGroup());
