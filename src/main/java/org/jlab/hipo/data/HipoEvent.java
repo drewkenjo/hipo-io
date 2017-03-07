@@ -184,6 +184,7 @@ public class HipoEvent {
             List<HipoNode> nodes = group.getNodes();
             this.addNodes(nodes);
         }
+        this.updateNodeIndex();
     }
     /**
      * returns a group of nodes for given Schema.
@@ -330,6 +331,7 @@ public class HipoEvent {
                 this.writeGroup(entry);
             }
         }
+        this.updateNodeIndex();
     }
     /**
      * removes group with given name from the event

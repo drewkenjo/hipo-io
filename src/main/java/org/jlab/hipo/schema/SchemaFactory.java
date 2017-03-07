@@ -293,9 +293,23 @@ public class SchemaFactory {
     
     public static void main(String[] args){
         SchemaFactory factory = new SchemaFactory();
+        System.setProperty("CLAS12DIR", "/Users/gavalian/Work/Software/Release-4a.0.0/COATJAVA/coatjava");
         factory.initFromDirectory("CLAS12DIR","etc/bankdefs/hipo");
 //.readSchemaDirectory("/Users/gavalian/Work/Software/Release-4a.0.0/COATJAVA/coatjava/etc/bankdefs/hipo");
-        factory.show();
+        //factory.show();
+        
+        HipoEvent event = new HipoEvent(factory);
+        
+        HipoGroup group = factory.getSchema("ECAL::clusters").createGroup(5);
+        
+        event.writeGroup(group);
+        event.show();
+        
+        event.removeGroup("ECAL::clusters");
+        event.show();
+        
+        event.writeGroup(group);
+        event.show();
         /*
         SchemaFactory factory = new SchemaFactory();
         factory.addSchema(new Schema("{1302,FTOF::dgtz}[1,px,FLOAT][2,py,FLOAT][3,pz,FLOAT]"));
