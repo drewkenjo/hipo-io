@@ -25,7 +25,7 @@ public class HipoEvent {
     
     ByteBuffer           eventBuffer = null;
     
-    List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();    
+    //List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();    
     Map<Integer,GroupNodeIndexList>  groupsIndex = new HashMap<Integer,GroupNodeIndexList>();
     
     
@@ -221,7 +221,7 @@ public class HipoEvent {
     }
     
     public void show(){
-        TextTable table = new TextTable("id:name:entries:group:items","4:24:12:9:9");
+        TextTable table = new TextTable("id:name:entries:group:items","4:36:12:9:9");
         //System.out.println("+------------------------------------------------------------+");
         Integer counter = 0;
         for(Map.Entry<Integer,GroupNodeIndexList>  entry : this.groupsIndex.entrySet()){
@@ -326,8 +326,10 @@ public class HipoEvent {
         if(this.hasGroup(group)==false) return;
         List<HipoGroup> groups = getGroups();
         reset();
+        this.groupsIndex.clear();
         for(HipoGroup entry : groups){
             if(entry.getSchema().getGroup()!=group){
+                //System.out.println("writing group " + entry.getSchema().getName());
                 this.writeGroup(entry);
             }
         }
