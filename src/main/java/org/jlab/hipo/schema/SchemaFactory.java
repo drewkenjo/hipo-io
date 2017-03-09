@@ -43,11 +43,11 @@ public class SchemaFactory {
     
     public void addSchema(Schema schema){
         if(this.schemaStore.containsKey(schema.getName())==true){
-            System.out.println("[SchemaFactory] ---> warning : schema with name "+
-                    schema.getName() + " already exists.");
+            //System.out.println("[SchemaFactory] ---> warning : schema with name "+
+            //        schema.getName() + " already exists.");
             if(this.overrideMode==false){
-                System.out.println("[SchemaFactory] ---> warning : new schema "+
-                        " is not added");
+                //System.out.println("[SchemaFactory] ---> warning : new schema "+
+                //        " is not added");
                 return;
             }
         }
