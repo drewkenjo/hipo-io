@@ -26,10 +26,10 @@ public class HipoEvent {
     ByteBuffer           eventBuffer = null;
     
     //List<HipoNodeIndex>   eventIndex = new ArrayList<HipoNodeIndex>();    
-    Map<Integer,GroupNodeIndexList>  groupsIndex = new HashMap<Integer,GroupNodeIndexList>();
+    private final Map<Integer,GroupNodeIndexList>  groupsIndex = new HashMap<Integer,GroupNodeIndexList>();
     
     
-    private SchemaFactory    eventSchemaFactory = new SchemaFactory();
+    private final SchemaFactory    eventSchemaFactory = new SchemaFactory();
         
     
     public HipoEvent(){
@@ -70,8 +70,8 @@ public class HipoEvent {
         eventBuffer = ByteBuffer.wrap(buffer);
         eventBuffer.order(ByteOrder.LITTLE_ENDIAN);
         updateNodeIndex();
-        //eventSchemaFactory.copy(factory);
-        this.eventSchemaFactory = factory;
+        eventSchemaFactory.copy(factory);
+//        this.eventSchemaFactory = factory;
     }
     /**
      * Add a single node to the event.
@@ -296,9 +296,13 @@ public class HipoEvent {
     }
     
     public boolean hasGroup(String group){
-        if(this.eventSchemaFactory.hasSchema(group)==true){
-            int groupId = this.eventSchemaFactory.getSchema(group).getGroup();
-            return this.groupsIndex.containsKey(groupId);
+        if(this.eventSchemaFactory.hasSchema(group)){
+            if (this.eventSchemaFactory.getSchema(group) == null){
+                System.out.println("---> warning : schema for the group = "+ group +" is null.");
+            } else {
+                int groupId = this.eventSchemaFactory.getSchema(group).getGroup();
+                return this.groupsIndex.containsKey(groupId);
+            }
         }
         return false;
     }
