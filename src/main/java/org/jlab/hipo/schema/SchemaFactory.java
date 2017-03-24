@@ -31,11 +31,11 @@ import org.jlab.hipo.utils.FileUtils;
  */
 public class SchemaFactory {
     
-    private Boolean  overrideMode = false;
+    private final Boolean  overrideMode = false;
     
-    private Map<String,Schema>        schemaStore = new LinkedHashMap<String,Schema>();
-    private Map<Integer,Schema> schemaStoreGroups = new LinkedHashMap<Integer,Schema>();
-    private List<String>             schemaFilter = new ArrayList<String>();
+    private final Map<String,Schema>        schemaStore = new LinkedHashMap<String,Schema>();
+    private final Map<Integer,Schema> schemaStoreGroups = new LinkedHashMap<Integer,Schema>();
+    private final List<String>             schemaFilter = new ArrayList<String>();
     
     public SchemaFactory(){
         
